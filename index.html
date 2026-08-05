@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Axis Bus Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+   <header>
+
+    <div class="logo-container">
+
+        <img src="assest/axislogo.jpeg" alt="Axis Colleges Logo">
+
+        <div class="college-info">
+
+            <h1>Axis Colleges</h1>
+
+            <p>Smart Bus Tracking System</p>
+
+        </div>
+
+    </div>
+
+</header><section class="hero">
+
+    <h2>Welcome to Axis Colleges Smart Bus Tracking System</h2>
+
+    <p>Track your college bus in real-time.</p>
+
+    <button>Track Bus</button>
+
+</section>
+<!--(bus selection)-->
+<section class="bus-selection">
+
+    <h2>Choose Your Bus</h2>
+
+    <div class="bus-container">
+
+        <div class="bus-card">
+            <h3>AX-01</h3>
+            <p>Main Campus Route</p>
+           <!-- AX-01 Button -->
+      <button id="trackBusBtn">Select Bus</button>
+        </div>
+
+        <div class="bus-card">
+            <h3>AX-02</h3>
+            <p>City Route</p>
+            <button>Select Bus</button>
+        </div>
+
+        <div class="bus-card">
+            <h3>AX-03</h3>
+            <p>Hostel Route</p>
+            <button>Select Bus</button>
+        </div>
+
+    </div>
+
+</section> 
+<!--(live bus tracker )-->
+<section class="map-section">
+
+    <h2>Live Bus Tracking</h2>
+
+    <!-- Google Map Container -->
+<div class="map-container" id="map">
+
+        <h3>Google Map</h3>
+
+        <p>Live Bus Location will appear here</p>
+
+    </div>
+
+</section>
+<section class="bus-info">
+
+    <h2>Bus Information</h2>
+
+    <div class="info-card">
+
+        <p><strong>Bus Number:</strong> AX-01</p>
+
+        <p><strong>Driver:</strong> Demo Driver</p>
+
+        <p><strong>Status:</strong> Running</p>
+
+        <p><strong>Route:</strong> Axis Colleges → Main City</p>
+
+        <p><strong>Last Updated:</strong> Just Now</p>
+
+    </div>
+
+</section>
+ <footer>
+
+    <p>© 2026 Axis Colleges Smart Bus Tracking System</p>
+
+    <p>Developed by Shaurya Gupta</p>
+
+</footer>
+
+<!-- JavaScript File -->
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBle2g5HxjN-VnW3tGX_oce7vBQG8ygscM&callback=initMap" async defer></script>
+
+<!-- JavaScript -->
+<script src="js/script.js"></script>
+</body>
+
+</html>
