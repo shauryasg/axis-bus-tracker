@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CampusRide - Portal Login & Registration</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #0b1329; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .auth-card { background: #1e293b; width: 100%; max-width: 420px; padding: 32px 24px; border-radius: 20px; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; }
+    
+    .brand { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 24px; font-weight: 700; color: #38bdf8; margin-bottom: 20px; }
+    
+    /* Top Role Selector */
+    .role-toggle { display: flex; background: #0f172a; border-radius: 12px; padding: 4px; margin-bottom: 20px; border: 1px solid #334155; }
+    .role-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: #94a3b8; background: transparent; transition: 0.2s; }
+    .role-btn.active { background: #2563eb; color: #fff; }
+
+    /* Action (Login / Register) Switch */
+    .mode-toggle { display: flex; justify-content: center; gap: 16px; margin-bottom: 20px; font-size: 13px; }
+    .mode-link { color: #38bdf8; text-decoration: none; cursor: pointer; font-weight: 600; }
+    .mode-link:hover { text-decoration: underline; }
+
+    .form-group { text-align: left; margin-bottom: 14px; }
+    label { display: block; font-size: 12px; color: #cbd5e1; margin-bottom: 6px; font-weight: 500; }
+    input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #fff; font-size: 14px; outline: none; }
+    input:focus, select:focus { border-color: #38bdf8; }
+
+    .btn-submit { width: 100%; padding: 14px; background: #2563eb; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    .btn-submit:hover { background: #1d4ed8; }
+    
+    .msg-box { font-size: 12px; margin-top: 12px; display: none; padding: 10px; border-radius: 8px; font-weight: 600; }
+    .msg-error { background: #fee2e2; color: #dc2626; }
+    .msg-success { background: #dcfce7; color: #16a34a; }
+  </style>
+</head>
+<body>
+
+<div class="auth-card">
+  <div class="brand">
+    <i class="ph-bold ph-bus"></i>
+    <span>CampusRide</span>
+  </div>
+
+  <!-- Role Toggle: Student vs Coordinator -->
+  <div class="role-toggle">
+    <button class="role-btn active" id="studentRoleBtn" onclick="setRole('student')">Student Portal</button>
+    <button class="role-btn" id="coordRoleBtn" onclick="setRole('coordinator')">Coordinator Portal</button>
+  </div>
+
+  <h3 id="formTitle" style="font-size: 18px; margin-bottom: 6px;">Student Login</h3>
+  <p id="formSub" style="font-size: 12px; color: #94a3b8; margin-bottom: 18px;">Sign in with your Roll Number and Password</p>
+
+  <form id="authForm" onsubmit="handleAuth(event)">
+    
+    <!-- Registration-only field: Full Name -->
+    <div class="form-group" id="nameGroup" style="display: none;">
+      <label>Full Name</label>
+      <input type="text" id="fullName" placeholder="Enter your full name">
+    </div>
+
+    <!-- Identifier field: Roll No or Coord ID -->
+    <div class="form-group">
+      <label id="idLabel">Student Roll Number</label>
+      <input type="text" id="userId" placeholder="e.g. 230123010001" required>
+    </div>
+
+    <!-- Coordinator Route Selector (Sign-up only) -->
+    <div class="form-group" id="coordBusGroup" style="display: none;">
+      <label>Select Assigned Bus</label>
+      <select id="assignedBus">
+        <option value="BUS 1">BUS 1 (Barasirohi - Kalyanpur - Rawatpur)</option>
+        <option value="BUS 2">BUS 2 (Shivam Palace - Kakadev - Mall Road)</option>
+        <option value="BUS 3">BUS 3 (Panki - Bhauti - Naubasta)</option>
+        <option value="BUS 4">BUS 4 (Gujaini - Kidwai Nagar - Yashoda Nagar)</option>
+      </select>
+    </div>
+
+    <!-- Coordinator Security Key Field (Sign-up only) -->
+    <div class="form-group" id="masterPinGroup" style="display: none;">
+      <label style="color: #38bdf8; font-weight: 700;">Coordinator Master Passcode</label>
+      <input type="password" id="masterPasscode" placeholder="Enter secret authorization key">
+    </div>
+
+    <!-- Password field -->
+    <div class="form-group">
+      <label id="passLabel">Password</label>
+      <input type="password" id="userPass" placeholder="••••••••" required>
+    </div>
+
+    <button type="submit" class="btn-submit" id="submitBtn">Sign In</button>
+  </form>
+
+  <div class="msg-box" id="msgBox"></div>
+
+  <div class="mode-toggle" style="margin-top: 18px;">
+    <span id="modePrompt" style="color: #94a3b8;">First time here?</span>
+    <a class="mode-link" id="modeToggleLink" onclick="toggleAuthMode()">Create New Password</a>
+  </div>
+</div>
+
+<script type="module">
+  import { db, ref, set, onValue } from "./firebase-config.js";
+
+  let currentRole = "student"; // 'student' or 'coordinator'
+  let isRegistering = false;   // login mode vs signup mode
+
+  window.setRole = function(role) {
+    currentRole = role;
+    document.getElementById("studentRoleBtn").classList.toggle("active", role === "student");
+    document.getElementById("coordRoleBtn").classList.toggle("active", role === "coordinator");
+    
+    document.getElementById("idLabel").innerText = role === "student" ? "Student Roll Number" : "Coordinator / Faculty ID";
+    document.getElementById("userId").placeholder = role === "student" ? "e.g. 230123010001" : "e.g. AXIS_COORD_01";
+    
+    updateFormUI();
+  };
+
+  window.toggleAuthMode = function() {
+    isRegistering = !isRegistering;
+    updateFormUI();
+  };
+
+  function updateFormUI() {
+    const title = document.getElementById("formTitle");
+    const sub = document.getElementById("formSub");
+    const nameGrp = document.getElementById("nameGroup");
+    const busGrp = document.getElementById("coordBusGroup");
+    const pinGrp = document.getElementById("masterPinGroup");
+    const submitBtn = document.getElementById("submitBtn");
+    const prompt = document.getElementById("modePrompt");
+    const toggleLink = document.getElementById("modeToggleLink");
+    const msgBox = document.getElementById("msgBox");
+    msgBox.style.display = "none";
+
+    const roleName = currentRole === "student" ? "Student" : "Coordinator";
+
+    if (isRegistering) {
+      title.innerText = `Create ${roleName} Account`;
+      sub.innerText = "Register your ID and create a new password";
+      nameGrp.style.display = "block";
+      busGrp.style.display = currentRole === "coordinator" ? "block" : "none";
+      pinGrp.style.display = currentRole === "coordinator" ? "block" : "none";
+      submitBtn.innerText = "Create Account & Sign In";
+      prompt.innerText = "Already set up?";
+      toggleLink.innerText = "Sign In instead";
+    } else {
+      title.innerText = `${roleName} Login`;
+      sub.innerText = "Sign in with your registered ID and password";
+      nameGrp.style.display = "none";
+      busGrp.style.display = "none";
+      pinGrp.style.display = "none";
+      submitBtn.innerText = "Sign In";
+      prompt.innerText = "First time here?";
+      toggleLink.innerText = "Create New Password";
+    }
+  }
+
+  window.handleAuth = function(e) {
+    e.preventDefault();
+    const rawId = document.getElementById("userId").value.trim().toUpperCase();
+    const cleanId = rawId.replace(/[.#$[\]]/g, "_");
+    const pass = document.getElementById("userPass").value.trim();
+    const name = document.getElementById("fullName").value.trim();
+    const bus = document.getElementById("assignedBus").value;
+    const msgBox = document.getElementById("msgBox");
+
+    // Master Key Verification for Coordinator Signup
+    if (isRegistering && currentRole === "coordinator") {
+      const pin = document.getElementById("masterPasscode").value.trim();
+      if (pin !== "AXIS@2026") {
+        showMsg("❌ Invalid Coordinator Master Passcode! Access Denied.", "error");
+        return;
+      }
+    }
+
+    const userRefPath = `users/${currentRole}s/${cleanId}`;
+    const userRef = ref(db, userRefPath);
+
+    onValue(userRef, (snapshot) => {
+      const existingData = snapshot.val();
+
+      if (isRegistering) {
+        if (existingData) {
+          showMsg("Account already exists with this ID! Please Sign In.", "error");
+          return;
+        }
+        
+        // Save profile
+        const profile = {
+          id: rawId,
+          name: name || rawId,
+          password: pass,
+          role: currentRole,
+          busId: currentRole === "coordinator" ? bus : "BUS 1",
+          createdAt: new Date().toISOString()
+        };
+
+        set(userRef, profile).then(() => {
+          localStorage.setItem("campusride_user", JSON.stringify(profile));
+          showMsg("Account verified & created! Redirecting...", "success");
+          setTimeout(redirectUser, 900);
+        }).catch(err => showMsg(err.message, "error"));
+
+      } else {
+        // Authenticate existing user
+        if (!existingData) {
+          showMsg("No account found with this ID. Click 'Create New Password' below.", "error");
+          return;
+        }
+        if (existingData.password !== pass) {
+          showMsg("Incorrect Password! Please check and try again.", "error");
+          return;
+        }
+
+        localStorage.setItem("campusride_user", JSON.stringify(existingData));
+        showMsg("Login successful! Redirecting...", "success");
+        setTimeout(redirectUser, 700);
+      }
+    }, { onlyOnce: true });
+  };
+
+  function showMsg(text, type) {
+    const msgBox = document.getElementById("msgBox");
+    msgBox.innerText = text;
+    msgBox.className = `msg-box msg-${type}`;
+    msgBox.style.display = "block";
+  }
+
+  function redirectUser() {
+    if (currentRole === "coordinator") {
+      window.location.href = "coordinator.html";
+    } else {
+      window.location.href = "index.html";
+    }
+  }
+</script>
+
+</body>
+</html>
