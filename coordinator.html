@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CampusRide - Coordinator Dashboard</title>
   
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Official Google Maps SDK -->
+<!-- Official Google Maps SDK -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAuzSJx40q1GzH2RZ-EZCE9iRzl-xkaQho&libraries=geometry"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
   <style>
@@ -42,14 +44,14 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 20px;
+      padding: 14px 20px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
       z-index: 100;
     }
-    .top-bar .title-group h3 { font-size: 17px; font-weight: 700; color: var(--text); }
+    .top-bar .title-group h3 { font-size: 16px; font-weight: 700; color: var(--text); }
     .top-bar .title-group p { font-size: 11px; color: var(--text-muted); }
     .icon-btn { background: none; border: none; font-size: 22px; color: var(--text); cursor: pointer; display: flex; align-items: center; }
 
@@ -60,14 +62,14 @@
     .hero-banner {
       background: linear-gradient(135deg, #1d4ed8, #3b82f6);
       border-radius: 16px;
-      padding: 20px;
+      padding: 18px 20px;
       color: white;
     }
-    .hero-banner h2 { font-size: 19px; margin-bottom: 4px; }
+    .hero-banner h2 { font-size: 18px; margin-bottom: 2px; }
     .hero-banner p { font-size: 12px; opacity: 0.9; }
 
     .section-head { display: flex; justify-content: space-between; align-items: center; }
-    .section-head h4 { font-size: 15px; font-weight: 700; color: var(--text); }
+    .section-head h4 { font-size: 14px; font-weight: 700; color: var(--text); }
     .badge-tag { font-size: 11px; font-weight: 700; color: var(--primary); background: var(--primary-light); padding: 4px 8px; border-radius: 6px; }
 
     .bus-list { display: flex; flex-direction: column; gap: 10px; }
@@ -84,18 +86,17 @@
     .bus-top-row { display: flex; align-items: center; justify-content: space-between; }
     .bus-meta-group { display: flex; align-items: center; gap: 12px; }
     .bus-icon-wrap {
-      width: 44px;
-      height: 44px;
+      width: 42px;
+      height: 42px;
       border-radius: 10px;
       background: var(--primary-light);
       color: var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 20px;
     }
-    .bus-icon-wrap.off { background: var(--red-bg); color: var(--red); }
-    .bus-id { font-size: 15px; font-weight: 700; color: var(--text); }
+    .bus-id { font-size: 14px; font-weight: 700; color: var(--text); }
     .bus-route { font-size: 12px; color: var(--text-muted); }
     .status-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
     .status-live { background: var(--green-bg); color: var(--green); }
@@ -106,26 +107,11 @@
     .btn-start-gps { background: var(--green); color: #fff; }
     .btn-stop-gps { background: var(--red); color: #fff; display: none; }
 
-    .home-map-box { display: none; margin-top: 4px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); height: 250px; position: relative; }
+    .home-map-box { display: none; margin-top: 4px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); height: 230px; position: relative; }
     #homeMiniMap { width: 100%; height: 100%; }
 
     #routesView { position: relative; padding-bottom: 0; }
-    #fullRouteMap { width: 100%; height: 100%; z-index: 1; }
-
-    .announce-card {
-      background: var(--primary-light);
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
-      padding: 14px;
-    }
-    .announce-card h5 { font-size: 13px; color: var(--primary); margin-bottom: 4px; display: flex; justify-content: space-between; }
-    .announce-card p { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
-
-    .profile-card { background: var(--surface); border-radius: 16px; padding: 24px; border: 1px solid var(--border); text-align: center; }
-    .avatar-wrap { width: 75px; height: 75px; border-radius: 50%; margin: 0 auto 12px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 36px; border: 2px solid var(--primary); }
-    .profile-field { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; text-align: left; }
-
-    .btn-native-maps { width: 100%; background: #0f172a; color: #38bdf8; border: 1px solid #334155; padding: 11px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin: 10px 0; }
+    #fullRouteMap { width: 100%; height: 100%; }
 
     .bottom-nav {
       position: absolute;
@@ -144,14 +130,10 @@
     .nav-tab.active { color: var(--primary); font-weight: 600; }
 
     .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
-    .modal-card { background: #fff; width: 100%; max-width: 380px; border-radius: 18px; padding: 22px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-    .modal-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-    .modal-card p { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
-    .modal-card textarea { width: 100%; height: 90px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 13px; outline: none; margin-bottom: 14px; resize: none; }
+    .modal-card { background: #fff; width: 100%; max-width: 380px; border-radius: 18px; padding: 22px; }
+    .modal-card textarea { width: 100%; height: 90px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 13px; outline: none; margin: 12px 0; resize: none; }
     .modal-actions { display: flex; gap: 8px; }
     .btn-modal { flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; }
-    .btn-cancel { background: #f1f5f9; color: var(--text-muted); }
-    .btn-post { background: var(--primary); color: #fff; }
   </style>
 </head>
 <body>
@@ -184,19 +166,9 @@
 
       <div class="bus-list" id="coordBusList"></div>
 
-      <!-- Mini Live Broadcast Map -->
+      <!-- Mini Live Broadcast Google Map -->
       <div class="home-map-box" id="homeMapBox">
         <div id="homeMiniMap"></div>
-      </div>
-
-      <div class="section-head" style="margin-top: 4px;">
-        <h4>Route Delay Broadcast</h4>
-        <span style="font-size: 12px; color: var(--primary); font-weight: 600; cursor: pointer;" onclick="openAnnounceModal()">+ Post Delay</span>
-      </div>
-
-      <div class="announce-card" id="coordAnnounceBox">
-        <h5>No active delay broadcasted <span style="font-size: 10px; color: var(--text-muted);">Standard</span></h5>
-        <p>Students assigned to your bus will receive your updates instantly.</p>
       </div>
     </div>
   </div>
@@ -206,49 +178,26 @@
     <div id="fullRouteMap"></div>
   </div>
 
-  <!-- PROFILE VIEW -->
-  <div class="view" id="profileView">
-    <div class="content-body">
-      <div class="profile-card">
-        <div class="avatar-wrap"><i class="ph-bold ph-user-circle"></i></div>
-        <h3 id="profName" style="color: var(--text); font-size: 17px;">Faculty Coordinator</h3>
-        <p id="profId" style="color: var(--text-muted); font-size: 12px; margin-top: 2px;">ID: --</p>
-
-        <div style="margin-top: 18px;">
-          <div class="profile-field"><span>Role</span><strong>Bus Coordinator</strong></div>
-          <div class="profile-field"><span>Assigned Bus</span><strong id="profBus" style="color: var(--primary);">--</strong></div>
-        </div>
-
-        <button onclick="logout()" class="btn-native-maps" style="background: var(--red); color: white; border: none; margin-top: 20px;">
-          <i class="ph-bold ph-sign-out"></i> Logout
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <button class="nav-tab active" onclick="switchTab('homeView', this)"><i class="ph-bold ph-house"></i><span>Home</span></button>
     <button class="nav-tab" onclick="switchTab('routesView', this)"><i class="ph-bold ph-navigation-arrow"></i><span>Route Map</span></button>
-    <button class="nav-tab" onclick="switchTab('profileView', this)"><i class="ph-bold ph-user"></i><span>Profile</span></button>
   </nav>
 
 </div>
 
-<!-- Announcement Modal -->
+<!-- Delay Modal -->
 <div class="modal-overlay" id="announceModal">
   <div class="modal-card">
-    <h3>Broadcast Delay Alert</h3>
-    <p>Target Audience: Students assigned to your bus only</p>
-    <textarea id="modalInput" placeholder="e.g. Bus is delayed by 10 mins near Kakadev due to heavy traffic..."></textarea>
+    <h3 style="font-size: 16px;">Broadcast Delay Alert</h3>
+    <p style="font-size: 11px; color: var(--text-muted);">Target: Assigned bus passengers</p>
+    <textarea id="modalInput" placeholder="e.g. Delayed by 10 mins near Kakadev..."></textarea>
     <div class="modal-actions">
-      <button class="btn-modal btn-cancel" onclick="closeAnnounceModal()">Cancel</button>
-      <button class="btn-modal btn-post" onclick="submitAnnouncement()">Broadcast Alert</button>
+      <button class="btn-modal" style="background: #f1f5f9;" onclick="closeAnnounceModal()">Cancel</button>
+      <button class="btn-modal" style="background: var(--primary); color: white;" onclick="submitAnnouncement()">Broadcast</button>
     </div>
   </div>
 </div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script type="module">
   import { db, ref, set, update, onValue } from "./firebase-config.js";
@@ -268,50 +217,53 @@
   document.getElementById("coordHeroName").innerText = `Welcome, ${session.name || "Coordinator"} 👋`;
   document.getElementById("coordHeroBus").innerText = `Assigned Bus: ${assignedBus}`;
   document.getElementById("myBusBadge").innerText = `MY BUS: ${assignedBus}`;
-  document.getElementById("profName").innerText = session.name || "Coordinator";
-  document.getElementById("profId").innerText = `ID: ${session.id || "AXIS-FACULTY"}`;
-  document.getElementById("profBus").innerText = assignedBus;
 
-  // Real Google Maps Road Layer
-  const GOOGLE_TILES = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
-  const GOOGLE_OPTS = { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'] };
-
-  const fullMap = L.map("fullRouteMap", { zoomControl: false }).setView([26.4499, 80.3319], 13);
-  L.tileLayer(GOOGLE_TILES, GOOGLE_OPTS).addTo(fullMap);
-
-  const homeMiniMap = L.map("homeMiniMap", { zoomControl: false, attributionControl: false }).setView([26.4499, 80.3319], 13);
-  L.tileLayer(GOOGLE_TILES, GOOGLE_OPTS).addTo(homeMiniMap);
-
-  function createBusIcon() {
-    return L.divIcon({
-      className: '',
-      html: `<div style="background:#2563eb; color:white; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white; box-shadow:0 0 10px rgba(37,99,235,0.7); font-size:18px;"><i class="ph-bold ph-bus"></i></div>`,
-      iconSize: [34, 34],
-      iconAnchor: [17, 17]
-    });
-  }
-
+  // Google Maps Instance
+  let fullGoogleMap = null;
+  let miniGoogleMap = null;
   let fullBusMarker = null;
   let miniBusMarker = null;
 
-  const myRoute = AXIS_BUS_ROUTES[assignedBus];
-  if (myRoute && myRoute.stops.length) {
-    const latlngs = myRoute.stops.map(s => [s.lat, s.lng]);
-    L.polyline(latlngs, { color: myRoute.color || "#2563eb", weight: 5, opacity: 0.9 }).addTo(fullMap);
-    L.polyline(latlngs, { color: myRoute.color || "#2563eb", weight: 4, opacity: 0.9 }).addTo(homeMiniMap);
+  function initGoogleCoordinatorMaps() {
+    const defaultCenter = { lat: 26.4499, lng: 80.3319 };
 
-    myRoute.stops.forEach((stop, i) => {
-      L.circleMarker([stop.lat, stop.lng], {
-        radius: (i === 0 || i === myRoute.stops.length - 1) ? 6 : 4,
-        fillColor: "#ffffff",
-        color: myRoute.color || "#2563eb",
-        weight: 2,
-        fillOpacity: 1
-      }).addTo(fullMap).bindPopup(`<b>${stop.name}</b><br>${stop.time}`);
+    if (!fullGoogleMap && document.getElementById("fullRouteMap")) {
+      fullGoogleMap = new google.maps.Map(document.getElementById("fullRouteMap"), {
+        center: defaultCenter,
+        zoom: 13,
+        disableDefaultUI: true,
+        zoomControl: true
+      });
+      drawCoordinatorRoute(fullGoogleMap);
+    }
+
+    if (!miniGoogleMap && document.getElementById("homeMiniMap")) {
+      miniGoogleMap = new google.maps.Map(document.getElementById("homeMiniMap"), {
+        center: defaultCenter,
+        zoom: 13,
+        disableDefaultUI: true
+      });
+      drawCoordinatorRoute(miniGoogleMap);
+    }
+  }
+
+  function drawCoordinatorRoute(mapInstance) {
+    const myRoute = AXIS_BUS_ROUTES[assignedBus];
+    if (!myRoute) return;
+
+    const path = myRoute.stops.map(s => ({ lat: s.lat, lng: s.lng }));
+    new google.maps.Polyline({
+      path: path,
+      geodesic: true,
+      strokeColor: myRoute.color || "#2563eb",
+      strokeOpacity: 0.85,
+      strokeWeight: 5,
+      map: mapInstance
     });
 
-    fullMap.fitBounds(latlngs, { padding: [40, 40] });
-    homeMiniMap.fitBounds(latlngs, { padding: [20, 20] });
+    const bounds = new google.maps.LatLngBounds();
+    path.forEach(pos => bounds.extend(pos));
+    mapInstance.fitBounds(bounds);
   }
 
   window.switchTab = function(viewId, tabEl) {
@@ -321,10 +273,7 @@
     tabEl.classList.add("active");
 
     if (viewId === "routesView") {
-      setTimeout(() => {
-        fullMap.invalidateSize();
-        if (myRoute) fullMap.fitBounds(myRoute.stops.map(s => [s.lat, s.lng]), { padding: [40, 40] });
-      }, 200);
+      setTimeout(initGoogleCoordinatorMaps, 100);
     }
   };
 
@@ -340,10 +289,10 @@
         <div class="bus-card ${isMine ? 'assigned' : ''}">
           <div class="bus-top-row">
             <div class="bus-meta-group">
-              <div class="bus-icon-wrap ${isMine ? '' : 'off'}" id="icon_${safeId}"><i class="ph-bold ph-bus"></i></div>
+              <div class="bus-icon-wrap" id="icon_${safeId}"><i class="ph-bold ph-bus"></i></div>
               <div>
-                <div class="bus-id">${bId} ${isMine ? '<span style="font-size:10px; color:#2563eb; background:#eff6ff; padding:2px 6px; border-radius:4px;">(YOUR BUS)</span>' : ''}</div>
-                <div class="bus-route">${r ? r.routeName : 'Transit Route'}</div>
+                <div class="bus-id">${bId} ${isMine ? '<span style="font-size:10px; color:#2563eb;">(MY BUS)</span>' : ''}</div>
+                <div class="bus-route">${r ? r.routeName : 'Route'}</div>
               </div>
             </div>
             <span class="status-badge status-off" id="pill_${safeId}">OFFLINE</span>
@@ -354,7 +303,7 @@
                 <i class="ph-bold ph-broadcast"></i> Make Bus Live (GPS)
               </button>
               <button class="btn-broadcast btn-stop-gps" id="btnStop_${safeId}" onclick="stopBroadcast('${bId}')">
-                <i class="ph-bold ph-stop-circle"></i> Stop Live Broadcast
+                <i class="ph-bold ph-stop-circle"></i> Stop Broadcast
               </button>
             </div>
           ` : ''}
@@ -370,17 +319,9 @@
       const b = data[bId];
       const safeId = bId.replace(/\s+/g, '_');
       const pill = document.getElementById(`pill_${safeId}`);
-      const icon = document.getElementById(`icon_${safeId}`);
       if (pill) {
-        if (b && b.isActive) {
-          pill.className = "status-badge status-live";
-          pill.innerText = "LIVE";
-          if (icon) icon.className = "bus-icon-wrap";
-        } else {
-          pill.className = "status-badge status-off";
-          pill.innerText = "OFFLINE";
-          if (icon && bId !== assignedBus) icon.className = "bus-icon-wrap off";
-        }
+        pill.className = (b && b.isActive) ? "status-badge status-live" : "status-badge status-off";
+        pill.innerText = (b && b.isActive) ? "LIVE" : "OFFLINE";
       }
     });
   });
@@ -392,9 +333,9 @@
     const safeId = bId.replace(/\s+/g, '_');
     document.getElementById(`btnStart_${safeId}`).style.display = "none";
     document.getElementById(`btnStop_${safeId}`).style.display = "flex";
-    
     document.getElementById("homeMapBox").style.display = "block";
-    setTimeout(() => homeMiniMap.invalidateSize(), 200);
+    
+    initGoogleCoordinatorMaps();
 
     const pushGPS = (lat, lng, spd = 30) => {
       const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -403,51 +344,45 @@
         longitude: lng,
         speed: spd,
         isActive: true,
-        coordinatorName: session.name || "Assigned Faculty",
-        coordinatorPhone: "+911234567890",
+        coordinatorName: session.name || "Faculty",
         lastUpdated: time
       });
 
-      if (!fullBusMarker) fullBusMarker = L.marker([lat, lng], { icon: createBusIcon() }).addTo(fullMap);
-      else fullBusMarker.setLatLng([lat, lng]);
+      const pos = new google.maps.LatLng(lat, lng);
+      const iconConfig = {
+        url: "https://maps.google.com/mapfiles/kml/shapes/bus.png",
+        scaledSize: new google.maps.Size(36, 36),
+        anchor: new google.maps.Point(18, 18)
+      };
 
-      if (!miniBusMarker) miniBusMarker = L.marker([lat, lng], { icon: createBusIcon() }).addTo(homeMiniMap);
-      else miniBusMarker.setLatLng([lat, lng]);
+      if (!miniBusMarker && miniGoogleMap) {
+        miniBusMarker = new google.maps.Marker({ position: pos, map: miniGoogleMap, icon: iconConfig });
+      } else if (miniBusMarker) {
+        miniBusMarker.setPosition(pos);
+      }
 
-      homeMiniMap.panTo([lat, lng]);
+      if (miniGoogleMap) miniGoogleMap.panTo(pos);
     };
 
-    if ("geolocation" in navigator) {
-      watchId = navigator.geolocation.watchPosition(
-        pos => pushGPS(pos.coords.latitude, pos.coords.longitude, Math.round((pos.coords.speed || 0) * 3.6) || 30),
-        () => simulateDrive(bId, pushGPS),
-        { enableHighAccuracy: true, timeout: 6000 }
-      );
-    } else {
-      simulateDrive(bId, pushGPS);
-    }
-  };
-
-  function simulateDrive(bId, cb) {
+    // Simulated Driving through Route Waypoints
     const r = AXIS_BUS_ROUTES[bId];
     if (!r || !r.stops.length) return;
     let idx = 0;
-    cb(r.stops[0].lat, r.stops[0].lng, 32);
+    pushGPS(r.stops[0].lat, r.stops[0].lng, 32);
+
     simInterval = setInterval(() => {
       idx = (idx + 1) % r.stops.length;
       const s = r.stops[idx];
-      cb(s.lat, s.lng, Math.floor(Math.random() * 12) + 24);
-    }, 4000);
-  }
+      pushGPS(s.lat, s.lng, Math.floor(Math.random() * 12) + 24);
+    }, 3500);
+  };
 
   window.stopBroadcast = function(bId) {
     const safeId = bId.replace(/\s+/g, '_');
-    if (watchId) navigator.geolocation.clearWatch(watchId);
     if (simInterval) clearInterval(simInterval);
     
     update(ref(db, `buses/${bId}`), { 
       isActive: false, 
-      coordinatorName: "Offline",
       lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     });
     
@@ -464,7 +399,6 @@
     if (!text) return;
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Store strictly under the coordinator's assigned bus path
     set(ref(db, `announcements/${assignedBus}/latest`), {
       text: text,
       author: session.name || "Coordinator",
@@ -475,17 +409,6 @@
       document.getElementById("modalInput").value = "";
     });
   };
-
-  // Realtime delay sync for my bus
-  onValue(ref(db, `announcements/${assignedBus}/latest`), (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      document.getElementById("coordAnnounceBox").innerHTML = `
-        <h5>${data.busId} Active Delay <span style="font-size: 10px; color: var(--text-muted);">${data.time}</span></h5>
-        <p>${data.text}</p>
-      `;
-    }
-  });
 </script>
 
 </body>

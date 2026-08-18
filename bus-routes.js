@@ -9,7 +9,7 @@ export const TRANSPORT_TEAM = {
   },
   controlRoom: {
     name: "Campus Control Room",
-    role: "Emergency & Lost & Found",
+    role: "Emergency Helpline",
     phone: "+911234567890"
   }
 };
@@ -104,7 +104,6 @@ export const AXIS_BUS_ROUTES = {
       { name: "PANKI POWER HOUSE", lat: 26.4740, lng: 80.2840, time: "07:02 AM" },
       { name: "RATANPUR CAMBRIJ", lat: 26.4700, lng: 80.2870, time: "07:08 AM" },
       { name: "RATANPUR NARAYANA", lat: 26.4670, lng: 80.2900, time: "07:14 AM" },
-      { name: "PANKI POWER HOUSE", lat: 26.4640, lng: 80.2930, time: "07:20 AM" },
       { name: "PANKI MANDIR", lat: 26.4610, lng: 80.2960, time: "07:24 AM" },
       { name: "BMC", lat: 26.4580, lng: 80.2990, time: "07:28 AM" },
       { name: "C.V.RAMAN", lat: 26.4550, lng: 80.3020, time: "07:33 AM" },
@@ -112,7 +111,6 @@ export const AXIS_BUS_ROUTES = {
       { name: "PANKI PADAV", lat: 26.4490, lng: 80.3080, time: "07:44 AM" },
       { name: "BHAUTI BRIDGE", lat: 26.4450, lng: 80.3120, time: "07:50 AM" },
       { name: "CHAKARPUR MANDY", lat: 26.4410, lng: 80.3160, time: "07:56 AM" },
-      { name: "BHAUTI -BRIDGE", lat: 26.4370, lng: 80.3200, time: "08:02 AM" },
       { name: "KAPILI MOD", lat: 26.4330, lng: 80.3240, time: "08:06 AM" },
       { name: "STEEL AUTHORITY OVERBRIDGE", lat: 26.4290, lng: 80.3290, time: "08:10 AM" },
       { name: "NAUBASTA CHAURAHA", lat: 26.4240, lng: 80.3350, time: "08:18 AM" },
@@ -132,7 +130,7 @@ export const AXIS_BUS_ROUTES = {
       { name: "HAPPY TOWER", lat: 26.4340, lng: 80.3100, time: "06:45 AM" },
       { name: "SHASTRI CHOWK", lat: 26.4360, lng: 80.3140, time: "06:50 AM" },
       { name: "KABIR HOSPITAL", lat: 26.4380, lng: 80.3170, time: "06:55 AM" },
-      { name: "SANKAT MORCHAN MANDIR", lat: 26.4400, lng: 80.3200, time: "07:00 AM" },
+      { name: "SANKAT MOCHAN MANDIR", lat: 26.4400, lng: 80.3200, time: "07:00 AM" },
       { name: "SACHAN GUEST HOUSE", lat: 26.4420, lng: 80.3230, time: "07:05 AM" },
       { name: "SOCIETY MOTOR", lat: 26.4440, lng: 80.3260, time: "07:10 AM" },
       { name: "DEEP CINEMA", lat: 26.4460, lng: 80.3290, time: "07:15 AM" },
