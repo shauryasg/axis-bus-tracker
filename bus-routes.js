@@ -1,25 +1,43 @@
 // bus-routes.js - Official Axis Colleges Bus Routes & Stoppages Data
 
 export const TRANSPORT_TEAM = {
+
   head: {
+
     name: "Kishan Sir",
+
     role: "HOD / Transport Manager",
+
     phone: "+911234567890",
+
     wa: "911234567890"
+
   },
+
   controlRoom: {
+
     name: "Campus Control Room",
+
     role: "Emergency Helpline",
+
     phone: "+911234567890"
+
   }
+
 };
 
 export const AXIS_BUS_ROUTES = {
+
   "BUS 1": {
+
     busId: "BUS 1",
+
     routeName: "Barasirohi - Kalyanpur - Rawatpur - Rama Devi",
+
     color: "#2563eb",
+
     stops: [
+
       { name: "BARASIROHI", lat: 26.5050, lng: 80.2580, time: "06:30 AM" },
       { name: "KALYANPUR CHUNGI", lat: 26.4950, lng: 80.2680, time: "06:36 AM" },
       { name: "CNG PUMP PANKI ROAD", lat: 26.4900, lng: 80.2720, time: "06:41 AM" },
@@ -45,54 +63,81 @@ export const AXIS_BUS_ROUTES = {
       { name: "GANGA NAGAR", lat: 26.4200, lng: 80.3640, time: "08:15 AM" },
       { name: "RAMA DEVI", lat: 26.4150, lng: 80.3700, time: "08:22 AM" },
       { name: "AXIS COLLEGES", lat: 26.3406, lng: 80.4503, time: "08:45 AM" }
+
     ]
+
   },
 
-  "BUS 2": {
-    busId: "BUS 2",
-    routeName: "Shivam Palace - Kakadev - Mall Road - Axis",
-    color: "#16a34a",
+
+  "BUS 9": {
+
+    busId: "BUS 9",
+
+    routeName: "Shaurya - Marhala Chauraha - Azad Nagar - Rama Devi - Axis",
+
+    color: "#2563eb",
+
     stops: [
-      { name: "SHIVAM PALACE", lat: 26.4910, lng: 80.2850, time: "06:30 AM" },
-      { name: "BRAMHDEV MANDIR", lat: 26.4880, lng: 80.2890, time: "06:34 AM" },
-      { name: "K.D.M.A.", lat: 26.4850, lng: 80.2920, time: "06:38 AM" },
-      { name: "S.B.I.", lat: 26.4820, lng: 80.2950, time: "06:41 AM" },
-      { name: "SANNESWAR CHAURAHA", lat: 26.4790, lng: 80.2980, time: "06:44 AM" },
-      { name: "NAMAK FACTORY CHAURAHA", lat: 26.4760, lng: 80.3010, time: "06:47 AM" },
-      { name: "CHHAPERA PULIYA", lat: 26.4730, lng: 80.3040, time: "06:50 AM" },
-      { name: "HARI GIRLS HOSTEL", lat: 26.4710, lng: 80.3070, time: "06:53 AM" },
-      { name: "DEVKI CHAURAHA", lat: 26.4690, lng: 80.3090, time: "06:56 AM" },
-      { name: "KAKADEV THANA", lat: 26.4670, lng: 80.3120, time: "06:59 AM" },
-      { name: "J.K. MANDIR", lat: 26.4650, lng: 80.3150, time: "07:02 AM" },
-      { name: "HALLET HOSPITAL", lat: 26.4630, lng: 80.3190, time: "07:05 AM" },
-      { name: "SWROOP NAGAR THANA", lat: 26.4610, lng: 80.3230, time: "07:08 AM" },
-      { name: "MOTI JHEEL", lat: 26.4590, lng: 80.3270, time: "07:12 AM" },
-      { name: "HARSH NAGAR", lat: 26.4570, lng: 80.3310, time: "07:16 AM" },
-      { name: "EIDGAH", lat: 26.4550, lng: 80.3340, time: "07:20 AM" },
-      { name: "BAJARIYA CHAURAHA", lat: 26.4530, lng: 80.3380, time: "07:24 AM" },
-      { name: "CHUNNI GANJ", lat: 26.4510, lng: 80.3420, time: "07:28 AM" },
-      { name: "LAL IMLI", lat: 26.4490, lng: 80.3460, time: "07:32 AM" },
-      { name: "PARED CHAURAHA", lat: 26.4470, lng: 80.3500, time: "07:36 AM" },
-      { name: "BADA CHAURAHA", lat: 26.4450, lng: 80.3530, time: "07:40 AM" },
-      { name: "S.B.I. CHAURAHA", lat: 26.4430, lng: 80.3560, time: "07:44 AM" },
-      { name: "PHOOLBAG", lat: 26.4410, lng: 80.3590, time: "07:48 AM" },
-      { name: "MALL ROAD", lat: 26.4380, lng: 80.3620, time: "07:53 AM" },
-      { name: "PANDIT HOTEL", lat: 26.4350, lng: 80.3650, time: "07:58 AM" },
-      { name: "MEERPUR CANT", lat: 26.4310, lng: 80.3680, time: "08:03 AM" },
-      { name: "POLICE LINE", lat: 26.4270, lng: 80.3710, time: "08:08 AM" },
-      { name: "COD BRIDGE", lat: 26.4230, lng: 80.3740, time: "08:12 AM" },
-      { name: "MANOJ HOTEL", lat: 26.4200, lng: 80.3770, time: "08:16 AM" },
-      { name: "KRISHNA NAGAR", lat: 26.4170, lng: 80.3800, time: "08:20 AM" },
-      { name: "RAMA DAVI", lat: 26.4140, lng: 80.3830, time: "08:25 AM" },
+
+      { name: "MARHALA CHAURAHA", lat: 26.49451, lng: 80.40038, time: "07:45 AM" },
+
+      { name: "AZAD NAGAR", lat: 26.49250, lng: 80.39920, time: "07:47 AM" },
+
+      { name: "AMBIKA PURAM", lat: 26.48860, lng: 80.39534, time: "07:48 AM" },
+
+      { name: "JOGA BHOGA", lat: 26.48640, lng: 80.39460, time: "07:49 AM" },
+
+      { name: "FAUJI DHABA", lat: 26.48530, lng: 80.39400, time: "07:50 AM" },
+
+      { name: "RISHI NAGAR", lat: 26.48280, lng: 80.39280, time: "07:51 AM" },
+
+      { name: "SABJI MANDI", lat: 26.48120, lng: 80.39180, time: "07:52 AM" },
+
+      { name: "SARASWATI TALKIES", lat: 26.48010, lng: 80.39090, time: "07:53 AM" },
+
+      { name: "DURGA MANDIR", lat: 26.47880, lng: 80.39000, time: "07:54 AM" },
+
+      { name: "GANGA GHAT THANA", lat: 26.47730, lng: 80.38900, time: "07:55 AM" },
+
+      { name: "PANDIT HOTEL", lat: 26.46650, lng: 80.38700, time: "08:05 AM" },
+
+      { name: "OM PURWA", lat: 26.42950, lng: 80.38450, time: "08:13 AM" },
+
+      { name: "JAGAI PURWA", lat: 26.42567, lng: 80.38341, time: "08:14 AM" },
+
+      { name: "JAISWAL HOUSE", lat: 26.42620, lng: 80.38400, time: "08:15 AM" },
+
+      { name: "PECIFIC LAWN", lat: 26.42600, lng: 80.38500, time: "08:18 AM" },
+
+      { name: "MAKKA MASJID", lat: 26.43225, lng: 80.38974, time: "08:19 AM" },
+
+      { name: "RIDING HOUSE", lat: 26.43050, lng: 80.38900, time: "08:21 AM" },
+
+      { name: "KDA", lat: 26.43110, lng: 80.39210, time: "08:24 AM" },
+
+      { name: "JK-1", lat: 26.42950, lng: 80.39100, time: "08:26 AM" },
+
+      { name: "HARJINDER NAGAR", lat: 26.41619, lng: 80.39230, time: "08:28 AM" },
+
+      { name: "RAMA DEVI", lat: 26.41150, lng: 80.38675, time: "08:30 AM" },
+
       { name: "AXIS COLLEGES", lat: 26.3406, lng: 80.4503, time: "08:45 AM" }
+
     ]
+
   },
+
 
   "BUS 3": {
+
     busId: "BUS 3",
+
     routeName: "Kalyanpur - Panki - Bhauti - Axis",
+
     color: "#f59e0b",
+
     stops: [
+
       { name: "BRAMHA DEV MANDIR", lat: 26.4980, lng: 80.2600, time: "06:30 AM" },
       { name: "MASWANPUR CHAURAHA", lat: 26.4950, lng: 80.2630, time: "06:34 AM" },
       { name: "KESHA KALYANPUR", lat: 26.4920, lng: 80.2660, time: "06:38 AM" },
@@ -116,14 +161,22 @@ export const AXIS_BUS_ROUTES = {
       { name: "NAUBASTA CHAURAHA", lat: 26.4240, lng: 80.3350, time: "08:18 AM" },
       { name: "RAMA DEVI", lat: 26.4150, lng: 80.3700, time: "08:25 AM" },
       { name: "AXIS COLLEGE", lat: 26.3406, lng: 80.4503, time: "08:45 AM" }
+
     ]
+
   },
 
+
   "BUS 4": {
+
     busId: "BUS 4",
+
     routeName: "Gujaini - Kidwai Nagar - Yashoda Nagar - Axis",
+
     color: "#9333ea",
+
     stops: [
+
       { name: "GUJAINI TEMPO STAND", lat: 26.4280, lng: 80.2980, time: "06:30 AM" },
       { name: "DURGA MANDIR", lat: 26.4300, lng: 80.3020, time: "06:35 AM" },
       { name: "DABAULI MOD", lat: 26.4320, lng: 80.3060, time: "06:40 AM" },
@@ -145,6 +198,9 @@ export const AXIS_BUS_ROUTES = {
       { name: "DELHI SUJANPUR", lat: 26.4200, lng: 80.3670, time: "08:12 AM" },
       { name: "RAMADEVI BRIDGE", lat: 26.4150, lng: 80.3710, time: "08:20 AM" },
       { name: "AXIS COLLEGE", lat: 26.3406, lng: 80.4503, time: "08:45 AM" }
+
     ]
+
   }
+
 };
