@@ -6,7 +6,6 @@
   <title>CampusRide - College Bus Tracker</title>
   
   <!-- Official Google Maps SDK -->
-  <!-- Official Google Maps SDK -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAuzSJx40q1GzH2RZ-EZCE9iRzl-xkaQho&libraries=geometry"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
@@ -378,38 +377,51 @@
     window.location.href = "login.html";
   }
 
-  window.logout = function() {
+  window.logout = function () {
     localStorage.removeItem("campusride_user");
     window.location.href = "login.html";
   };
 
   const assignedBus = session.busId || "BUS 1";
-  document.getElementById("heroName").innerText = `Welcome, ${session.name || session.id} 👋`;
-  document.getElementById("heroRoute").innerText = `Assigned Bus: ${assignedBus}`;
+  document.getElementById("heroName").innerText =
+    `Welcome, ${session.name || session.id} 👋`;
+  document.getElementById("heroRoute").innerText =
+    `Assigned Bus: ${assignedBus}`;
 
-  // Google Map Objects
   let gMap = null;
   let gBusMarker = null;
   let gRoutePath = null;
   let gStopMarkers = [];
   let activeSelectedBus = assignedBus;
-  let activeBusLat = 26.4499;
-  let activeBusLng = 80.3319;
+  let activeBusLat = null;
+  let activeBusLng = null;
   let currentStopIndex = 0;
+  let latestBusesData = {};
 
-  // Toggle Bottom Route Sheet (Where Is My Train)
-  window.toggleRouteSheet = function() {
+  window.toggleRouteSheet = function () {
     const sheet = document.getElementById("routeSheet");
     const icon = document.getElementById("sheetToggleIcon");
     sheet.classList.toggle("collapsed");
-    icon.style.transform = sheet.classList.contains("collapsed") ? "rotate(180deg)" : "rotate(0deg)";
+    icon.style.transform =
+      sheet.classList.contains("collapsed") ? "rotate(180deg)" : "rotate(0deg)";
   };
 
-  // Google Map Initialization
   function initGoogleMap() {
-    if (gMap) return;
-    
-    gMap = new google.maps.Map(document.getElementById("trackingMap"), {
+    if (gMap) {
+      google.maps.event.trigger(gMap, "resize");
+      renderGoogleRoute(activeSelectedBus);
+      renderActiveBusLocation();
+      return;
+    }
+
+    const mapElement = document.getElementById("trackingMap");
+
+    if (typeof google === "undefined" || !google.maps || !mapElement) {
+      console.error("Google Maps SDK is not available.");
+      return;
+    }
+
+    gMap = new google.maps.Map(mapElement, {
       center: { lat: 26.4499, lng: 80.3319 },
       zoom: 13,
       mapTypeId: "roadmap",
@@ -418,24 +430,27 @@
     });
 
     renderGoogleRoute(activeSelectedBus);
+    renderActiveBusLocation();
   }
 
   function renderGoogleRoute(busId) {
     activeSelectedBus = busId;
+
     const rData = AXIS_BUS_ROUTES[busId];
     if (!rData || !gMap) return;
 
     document.getElementById("trackBusTitle").innerText = busId;
     document.getElementById("cleanBusId").innerText = busId;
 
-    // Clear previous markers & paths
     if (gRoutePath) gRoutePath.setMap(null);
-    gStopMarkers.forEach(m => m.setMap(null));
+    gStopMarkers.forEach(marker => marker.setMap(null));
     gStopMarkers = [];
 
-    const pathCoordinates = rData.stops.map(s => ({ lat: s.lat, lng: s.lng }));
+    const pathCoordinates = rData.stops.map(s => ({
+      lat: Number(s.lat),
+      lng: Number(s.lng)
+    }));
 
-    // Real road route polyline
     gRoutePath = new google.maps.Polyline({
       path: pathCoordinates,
       geodesic: true,
@@ -445,10 +460,14 @@
       map: gMap
     });
 
-    // Add Stop Dots on Google Map
     const bounds = new google.maps.LatLngBounds();
+
     rData.stops.forEach((stop, idx) => {
-      const pos = { lat: stop.lat, lng: stop.lng };
+      const pos = {
+        lat: Number(stop.lat),
+        lng: Number(stop.lng)
+      };
+
       bounds.extend(pos);
 
       const stopDot = new google.maps.Marker({
@@ -457,23 +476,80 @@
         title: stop.name,
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
-          scale: (idx === 0 || idx === rData.stops.length - 1) ? 6 : 4,
+          scale: idx === 0 || idx === rData.stops.length - 1 ? 6 : 4,
           fillColor: "#ffffff",
           fillOpacity: 1,
           strokeColor: rData.color || "#2563eb",
           strokeWeight: 2
         }
       });
+
       gStopMarkers.push(stopDot);
     });
 
     gMap.fitBounds(bounds);
-    updateTrainTimeline(0);
+    updateTrainTimeline(currentStopIndex);
   }
 
-  // Update Where Is My Train Stop Movement
+  function renderActiveBusLocation() {
+    const bus = latestBusesData[activeSelectedBus];
+
+    if (!bus || bus.isActive !== true) {
+      document.getElementById("cleanStatus").className =
+        "status-badge status-off";
+      document.getElementById("cleanStatus").innerText = "OFFLINE";
+
+      if (gBusMarker) {
+        gBusMarker.setMap(null);
+        gBusMarker = null;
+      }
+
+      return;
+    }
+
+    const lat = Number(bus.latitude);
+    const lng = Number(bus.longitude);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      console.error("Invalid Firebase coordinates:", bus);
+      return;
+    }
+
+    activeBusLat = lat;
+    activeBusLng = lng;
+
+    document.getElementById("cleanStatus").className =
+      "status-badge status-live";
+    document.getElementById("cleanStatus").innerText = "LIVE";
+
+    if (!gMap) return;
+
+    const pos = new google.maps.LatLng(lat, lng);
+
+    if (gBusMarker) {
+      gBusMarker.setPosition(pos);
+    } else {
+      gBusMarker = new google.maps.Marker({
+        position: pos,
+        map: gMap,
+        title: activeSelectedBus,
+        icon: {
+          url: "https://maps.google.com/mapfiles/kml/shapes/bus.png",
+          scaledSize: new google.maps.Size(38, 38),
+          anchor: new google.maps.Point(19, 19)
+        }
+      });
+    }
+
+    gMap.panTo(pos);
+
+    const nearest = calculateNearestStop(lat, lng);
+    updateTrainTimeline(nearest);
+  }
+
   function updateTrainTimeline(closestIdx) {
     currentStopIndex = closestIdx;
+
     const rData = AXIS_BUS_ROUTES[activeSelectedBus];
     if (!rData) return;
 
@@ -482,6 +558,7 @@
     document.getElementById("sheetEta").innerText = curStop.time;
 
     const tBox = document.getElementById("trainTimelineBox");
+
     tBox.innerHTML = rData.stops.map((stop, idx) => {
       let stateClass = "";
       let busBadge = "";
@@ -490,7 +567,8 @@
         stateClass = "passed";
       } else if (idx === closestIdx) {
         stateClass = "current";
-        busBadge = `<span class="train-bus-badge"><i class="ph-bold ph-bus"></i> Bus Here</span>`;
+        busBadge =
+          `<span class="train-bus-badge"><i class="ph-bold ph-bus"></i> Bus Here</span>`;
       }
 
       return `
@@ -499,68 +577,106 @@
             <span>${stop.name}</span>
             ${busBadge}
           </div>
-          <span style="font-size: 11px; color: var(--text-muted);">${stop.time}</span>
+          <span style="font-size: 11px; color: var(--text-muted);">
+            ${stop.time}
+          </span>
         </div>
       `;
     }).join("");
   }
 
-  // Calculate Nearest Stop for the Bus
   function calculateNearestStop(busLat, busLng) {
     const rData = AXIS_BUS_ROUTES[activeSelectedBus];
     if (!rData) return 0;
+
     let minDistance = Infinity;
     let nearestIdx = 0;
 
-    rData.stops.forEach((s, idx) => {
-      const d = Math.hypot(s.lat - busLat, s.lng - busLng);
-      if (d < minDistance) {
-        minDistance = d;
+    rData.stops.forEach((stop, idx) => {
+      const lat = Number(stop.lat);
+      const lng = Number(stop.lng);
+
+      const dLat = (lat - busLat) * 111320;
+      const dLng =
+        (lng - busLng) *
+        111320 *
+        Math.cos((busLat * Math.PI) / 180);
+
+      const distance = Math.hypot(dLat, dLng);
+
+      if (distance < minDistance) {
+        minDistance = distance;
         nearestIdx = idx;
       }
     });
+
     return nearestIdx;
   }
 
-  window.openInNativeMaps = function() {
+  window.openInNativeMaps = function () {
+    if (
+      !Number.isFinite(activeBusLat) ||
+      !Number.isFinite(activeBusLng)
+    ) {
+      alert("Live bus location is not available yet.");
+      return;
+    }
+
     const isApple = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
+
     if (isApple) {
-      window.open(`maps://maps.apple.com/?q=${activeSelectedBus}+Live&ll=${activeBusLat},${activeBusLng}&z=16`, "_blank");
+      window.open(
+        `maps://maps.apple.com/?q=${activeSelectedBus}+Live&ll=${activeBusLat},${activeBusLng}&z=16`,
+        "_blank"
+      );
     } else {
-      window.open(`https://www.google.com/maps/search/?api=1&query=${activeBusLat},${activeBusLng}`, "_blank");
+      window.open(
+        `https://www.google.com/maps/search/?api=1&query=${activeBusLat},${activeBusLng}`,
+        "_blank"
+      );
     }
   };
 
-  window.switchView = function(viewId, tabEl) {
+  window.switchView = function (viewId, tabEl) {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     document.getElementById(viewId).classList.add("active");
+
     if (tabEl) {
       document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
       tabEl.classList.add("active");
     }
+
     if (viewId === "mapView") {
       setTimeout(() => {
         initGoogleMap();
         renderGoogleRoute(activeSelectedBus);
+        renderActiveBusLocation();
       }, 150);
     }
   };
 
-  window.toggleDrawer = open => document.getElementById('drawerOverlay').classList.toggle('open', open);
-  window.openModal = id => document.getElementById(id).classList.add("active");
-  window.closeModal = id => document.getElementById(id).classList.remove("active");
+  window.toggleDrawer = open =>
+    document.getElementById("drawerOverlay").classList.toggle("open", open);
 
-  // Render Home Fleet Cards
+  window.openModal = id =>
+    document.getElementById(id).classList.add("active");
+
+  window.closeModal = id =>
+    document.getElementById(id).classList.remove("active");
+
   const busListContainer = document.getElementById("busCardsList");
   const busKeys = Object.keys(AXIS_BUS_ROUTES);
 
   function renderFleetCards() {
     busListContainer.innerHTML = busKeys.map(bId => {
       const r = AXIS_BUS_ROUTES[bId];
-      const safeId = bId.replace(/\s+/g, '_');
+      const safeId = bId.replace(/\s+/g, "_");
+
       return `
         <div class="bus-card" onclick="selectAndTrackBus('${bId}')">
-          <div class="bus-icon-wrap off" id="icon_${safeId}"><i class="ph-bold ph-bus"></i></div>
+          <div class="bus-icon-wrap off" id="icon_${safeId}">
+            <i class="ph-bold ph-bus"></i>
+          </div>
           <div class="bus-info">
             <div class="bus-info-top">
               <span class="bus-id">${bId}</span>
@@ -573,73 +689,57 @@
       `;
     }).join("");
   }
+
   renderFleetCards();
 
-  window.selectAndTrackBus = function(bId) {
+  window.selectAndTrackBus = function (bId) {
     activeSelectedBus = bId;
     switchView("mapView", document.querySelectorAll(".nav-tab")[1]);
   };
 
-  // Firebase Realtime Bus Sync
-  onValue(ref(db, "buses"), (snapshot) => {
-    const buses = snapshot.val() || {};
+  onValue(ref(db, "buses"), snapshot => {
+    latestBusesData = snapshot.val() || {};
+
     busKeys.forEach(bId => {
-      const bus = buses[bId];
-      const safeId = bId.replace(/\s+/g, '_');
+      const bus = latestBusesData[bId];
+      const safeId = bId.replace(/\s+/g, "_");
+
       const pill = document.getElementById(`pill_${safeId}`);
       const icon = document.getElementById(`icon_${safeId}`);
 
-      if (bus && bus.isActive) {
-        if (pill) { pill.className = "status-badge status-live"; pill.innerText = "LIVE"; }
-        if (icon) icon.className = "bus-icon-wrap";
+      const isLive =
+        !!bus &&
+        bus.isActive === true &&
+        Number.isFinite(Number(bus.latitude)) &&
+        Number.isFinite(Number(bus.longitude));
 
-        if (bId === activeSelectedBus) {
-          activeBusLat = bus.latitude;
-          activeBusLng = bus.longitude;
-          document.getElementById("cleanStatus").className = "status-badge status-live";
-          document.getElementById("cleanStatus").innerText = "LIVE";
+      if (pill) {
+        pill.className = isLive
+          ? "status-badge status-live"
+          : "status-badge status-off";
+        pill.innerText = isLive ? "LIVE" : "OFFLINE";
+      }
 
-          if (gMap && activeBusLat && activeBusLng) {
-            const pos = new google.maps.LatLng(activeBusLat, activeBusLng);
-            if (gBusMarker) {
-              gBusMarker.setPosition(pos);
-            } else {
-              gBusMarker = new google.maps.Marker({
-                position: pos,
-                map: gMap,
-                title: activeSelectedBus,
-                icon: {
-                  url: "https://maps.google.com/mapfiles/kml/shapes/bus.png",
-                  scaledSize: new google.maps.Size(38, 38),
-                  anchor: new google.maps.Point(19, 19)
-                }
-              });
-            }
-            gMap.panTo(pos);
-
-            // Update Nearest Stop Timeline
-            const nearest = calculateNearestStop(activeBusLat, activeBusLng);
-            updateTrainTimeline(nearest);
-          }
-        }
-      } else {
-        if (pill) { pill.className = "status-badge status-off"; pill.innerText = "OFFLINE"; }
-        if (icon) icon.className = "bus-icon-wrap off";
-
-        if (bId === activeSelectedBus) {
-          document.getElementById("cleanStatus").className = "status-badge status-off";
-          document.getElementById("cleanStatus").innerText = "OFFLINE";
-        }
+      if (icon) {
+        icon.className = isLive
+          ? "bus-icon-wrap"
+          : "bus-icon-wrap off";
       }
     });
+
+    renderActiveBusLocation();
   });
 
-  // Delay Notification Sync
-  onValue(ref(db, `announcements/${assignedBus}/latest`), (snapshot) => {
+  onValue(ref(db, `announcements/${assignedBus}/latest`), snapshot => {
     const d = snapshot.val();
+
     if (d && d.text) {
       document.getElementById("topNotifBadge").style.display = "block";
-      document.getElementById("announceTitle").innerHTML = `${d.busId} Active Delay <span style="font-size: 10px; color: var(--text-muted);">${d.time || 'Recent'}</span>`;
+      document.getElementById("announceTitle").innerHTML =
+        `${d.busId} Active Delay
+         <span style="font-size: 10px; color: var(--text-muted);">
+           ${d.time || "Recent"}
+         </span>`;
       document.getElementById("announceMsg").innerText = d.text;
     }
   });

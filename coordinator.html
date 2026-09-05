@@ -208,52 +208,88 @@
     window.location.href = "login.html";
   }
 
-  window.logout = function() {
+  window.logout = function () {
     localStorage.removeItem("campusride_user");
     window.location.href = "login.html";
   };
 
   const assignedBus = session.busId || "BUS 1";
-  document.getElementById("coordHeroName").innerText = `Welcome, ${session.name || "Coordinator"} 👋`;
-  document.getElementById("coordHeroBus").innerText = `Assigned Bus: ${assignedBus}`;
-  document.getElementById("myBusBadge").innerText = `MY BUS: ${assignedBus}`;
+  document.getElementById("coordHeroName").innerText =
+    `Welcome, ${session.name || "Coordinator"} 👋`;
+  document.getElementById("coordHeroBus").innerText =
+    `Assigned Bus: ${assignedBus}`;
+  document.getElementById("myBusBadge").innerText =
+    `MY BUS: ${assignedBus}`;
 
-  // Google Maps Instance
   let fullGoogleMap = null;
   let miniGoogleMap = null;
   let fullBusMarker = null;
   let miniBusMarker = null;
+  let liveTrailFull = null;
+  let liveTrailMini = null;
+  let watchId = null;
+  let broadcastingBusId = null;
 
   function initGoogleCoordinatorMaps() {
     const defaultCenter = { lat: 26.4499, lng: 80.3319 };
 
     if (!fullGoogleMap && document.getElementById("fullRouteMap")) {
-      fullGoogleMap = new google.maps.Map(document.getElementById("fullRouteMap"), {
-        center: defaultCenter,
-        zoom: 13,
-        disableDefaultUI: true,
-        zoomControl: true
-      });
+      fullGoogleMap = new google.maps.Map(
+        document.getElementById("fullRouteMap"),
+        {
+          center: defaultCenter,
+          zoom: 13,
+          disableDefaultUI: true,
+          zoomControl: true
+        }
+      );
+
       drawCoordinatorRoute(fullGoogleMap);
+
+      liveTrailFull = new google.maps.Polyline({
+        path: [],
+        geodesic: true,
+        strokeColor: "#2563eb",
+        strokeOpacity: 0.9,
+        strokeWeight: 4,
+        map: fullGoogleMap
+      });
     }
 
     if (!miniGoogleMap && document.getElementById("homeMiniMap")) {
-      miniGoogleMap = new google.maps.Map(document.getElementById("homeMiniMap"), {
-        center: defaultCenter,
-        zoom: 13,
-        disableDefaultUI: true
-      });
+      miniGoogleMap = new google.maps.Map(
+        document.getElementById("homeMiniMap"),
+        {
+          center: defaultCenter,
+          zoom: 13,
+          disableDefaultUI: true
+        }
+      );
+
       drawCoordinatorRoute(miniGoogleMap);
+
+      liveTrailMini = new google.maps.Polyline({
+        path: [],
+        geodesic: true,
+        strokeColor: "#2563eb",
+        strokeOpacity: 0.9,
+        strokeWeight: 4,
+        map: miniGoogleMap
+      });
     }
   }
 
   function drawCoordinatorRoute(mapInstance) {
     const myRoute = AXIS_BUS_ROUTES[assignedBus];
-    if (!myRoute) return;
+    if (!myRoute || !myRoute.stops?.length) return;
 
-    const path = myRoute.stops.map(s => ({ lat: s.lat, lng: s.lng }));
+    const path = myRoute.stops.map(s => ({
+      lat: Number(s.lat),
+      lng: Number(s.lng)
+    }));
+
     new google.maps.Polyline({
-      path: path,
+      path,
       geodesic: true,
       strokeColor: myRoute.color || "#2563eb",
       strokeOpacity: 0.85,
@@ -266,9 +302,51 @@
     mapInstance.fitBounds(bounds);
   }
 
-  window.switchTab = function(viewId, tabEl) {
+  function updateCoordinatorMarkers(lat, lng) {
+    const pos = new google.maps.LatLng(lat, lng);
+
+    const iconConfig = {
+      url: "https://maps.google.com/mapfiles/kml/shapes/bus.png",
+      scaledSize: new google.maps.Size(36, 36),
+      anchor: new google.maps.Point(18, 18)
+    };
+
+    if (miniGoogleMap) {
+      if (!miniBusMarker) {
+        miniBusMarker = new google.maps.Marker({
+          position: pos,
+          map: miniGoogleMap,
+          title: assignedBus,
+          icon: iconConfig
+        });
+      } else {
+        miniBusMarker.setPosition(pos);
+      }
+      miniGoogleMap.panTo(pos);
+    }
+
+    if (fullGoogleMap) {
+      if (!fullBusMarker) {
+        fullBusMarker = new google.maps.Marker({
+          position: pos,
+          map: fullGoogleMap,
+          title: assignedBus,
+          icon: iconConfig
+        });
+      } else {
+        fullBusMarker.setPosition(pos);
+      }
+      fullGoogleMap.panTo(pos);
+    }
+
+    if (liveTrailMini) liveTrailMini.getPath().push(pos);
+    if (liveTrailFull) liveTrailFull.getPath().push(pos);
+  }
+
+  window.switchTab = function (viewId, tabEl) {
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     document.getElementById(viewId).classList.add("active");
+
     document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
     tabEl.classList.add("active");
 
@@ -282,131 +360,205 @@
 
   function renderCards() {
     coordBusList.innerHTML = busKeys.map(bId => {
-      const isMine = (bId === assignedBus);
-      const safeId = bId.replace(/\s+/g, '_');
+      const isMine = bId === assignedBus;
+      const safeId = bId.replace(/\s+/g, "_");
       const r = AXIS_BUS_ROUTES[bId];
+
       return `
-        <div class="bus-card ${isMine ? 'assigned' : ''}">
+        <div class="bus-card ${isMine ? "assigned" : ""}">
           <div class="bus-top-row">
             <div class="bus-meta-group">
-              <div class="bus-icon-wrap" id="icon_${safeId}"><i class="ph-bold ph-bus"></i></div>
+              <div class="bus-icon-wrap" id="icon_${safeId}">
+                <i class="ph-bold ph-bus"></i>
+              </div>
               <div>
-                <div class="bus-id">${bId} ${isMine ? '<span style="font-size:10px; color:#2563eb;">(MY BUS)</span>' : ''}</div>
-                <div class="bus-route">${r ? r.routeName : 'Route'}</div>
+                <div class="bus-id">
+                  ${bId}
+                  ${isMine ? '<span style="font-size:10px; color:#2563eb;">(MY BUS)</span>' : ""}
+                </div>
+                <div class="bus-route">${r ? r.routeName : "Route"}</div>
               </div>
             </div>
             <span class="status-badge status-off" id="pill_${safeId}">OFFLINE</span>
           </div>
+
           ${isMine ? `
             <div class="bus-control-row">
-              <button class="btn-broadcast btn-start-gps" id="btnStart_${safeId}" onclick="startBroadcast('${bId}')">
+              <button class="btn-broadcast btn-start-gps"
+                id="btnStart_${safeId}"
+                onclick="startBroadcast('${bId}')">
                 <i class="ph-bold ph-broadcast"></i> Make Bus Live (GPS)
               </button>
-              <button class="btn-broadcast btn-stop-gps" id="btnStop_${safeId}" onclick="stopBroadcast('${bId}')">
+              <button class="btn-broadcast btn-stop-gps"
+                id="btnStop_${safeId}"
+                onclick="stopBroadcast('${bId}')">
                 <i class="ph-bold ph-stop-circle"></i> Stop Broadcast
               </button>
             </div>
-          ` : ''}
+          ` : ""}
         </div>
       `;
     }).join("");
   }
+
   renderCards();
 
-  onValue(ref(db, "buses"), (snapshot) => {
+  onValue(ref(db, "buses"), snapshot => {
     const data = snapshot.val() || {};
+
     busKeys.forEach(bId => {
       const b = data[bId];
-      const safeId = bId.replace(/\s+/g, '_');
+      const safeId = bId.replace(/\s+/g, "_");
       const pill = document.getElementById(`pill_${safeId}`);
+
       if (pill) {
-        pill.className = (b && b.isActive) ? "status-badge status-live" : "status-badge status-off";
-        pill.innerText = (b && b.isActive) ? "LIVE" : "OFFLINE";
+        pill.className = b?.isActive
+          ? "status-badge status-live"
+          : "status-badge status-off";
+        pill.innerText = b?.isActive ? "LIVE" : "OFFLINE";
       }
     });
   });
 
-  let watchId = null;
-  let simInterval = null;
+  window.startBroadcast = function (bId) {
+    if (!navigator.geolocation) {
+      alert("GPS is not supported on this device/browser.");
+      return;
+    }
 
-  window.startBroadcast = function(bId) {
-    const safeId = bId.replace(/\s+/g, '_');
-    document.getElementById(`btnStart_${safeId}`).style.display = "none";
-    document.getElementById(`btnStop_${safeId}`).style.display = "flex";
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+
+    const safeId = bId.replace(/\s+/g, "_");
+    const startBtn = document.getElementById(`btnStart_${safeId}`);
+    const stopBtn = document.getElementById(`btnStop_${safeId}`);
+
+    if (startBtn) startBtn.style.display = "none";
+    if (stopBtn) stopBtn.style.display = "flex";
+
     document.getElementById("homeMapBox").style.display = "block";
-    
     initGoogleCoordinatorMaps();
+    broadcastingBusId = bId;
 
-    const pushGPS = (lat, lng, spd = 30) => {
-      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      update(ref(db, `buses/${bId}`), {
-        latitude: lat,
-        longitude: lng,
-        speed: spd,
-        isActive: true,
-        coordinatorName: session.name || "Faculty",
-        lastUpdated: time
-      });
+    const pushGPS = async (lat, lng, speedKmh) => {
+      try {
+        await update(ref(db, `buses/${bId}`), {
+          latitude: lat,
+          longitude: lng,
+          speed: speedKmh,
+          isActive: true,
+          coordinatorName: session.name || "Faculty",
+          lastUpdated: new Date().toISOString()
+        });
 
-      const pos = new google.maps.LatLng(lat, lng);
-      const iconConfig = {
-        url: "https://maps.google.com/mapfiles/kml/shapes/bus.png",
-        scaledSize: new google.maps.Size(36, 36),
-        anchor: new google.maps.Point(18, 18)
-      };
-
-      if (!miniBusMarker && miniGoogleMap) {
-        miniBusMarker = new google.maps.Marker({ position: pos, map: miniGoogleMap, icon: iconConfig });
-      } else if (miniBusMarker) {
-        miniBusMarker.setPosition(pos);
+        updateCoordinatorMarkers(lat, lng);
+      } catch (error) {
+        console.error("Firebase GPS update failed:", error);
       }
-
-      if (miniGoogleMap) miniGoogleMap.panTo(pos);
     };
 
-    // Simulated Driving through Route Waypoints
-    const r = AXIS_BUS_ROUTES[bId];
-    if (!r || !r.stops.length) return;
-    let idx = 0;
-    pushGPS(r.stops[0].lat, r.stops[0].lng, 32);
+    watchId = navigator.geolocation.watchPosition(
+      position => {
+        const lat = Number(position.coords.latitude);
+        const lng = Number(position.coords.longitude);
 
-    simInterval = setInterval(() => {
-      idx = (idx + 1) % r.stops.length;
-      const s = r.stops[idx];
-      pushGPS(s.lat, s.lng, Math.floor(Math.random() * 12) + 24);
-    }, 3500);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+          console.error("Invalid GPS coordinates:", position.coords);
+          return;
+        }
+
+        const rawSpeed = position.coords.speed;
+        const speedKmh =
+          rawSpeed !== null && Number.isFinite(rawSpeed)
+            ? Math.max(0, rawSpeed * 3.6)
+            : 0;
+
+        pushGPS(
+          Number(lat.toFixed(6)),
+          Number(lng.toFixed(6)),
+          Number(speedKmh.toFixed(1))
+        );
+      },
+      error => {
+        console.error("GPS Error:", error);
+
+        if (error.code === error.PERMISSION_DENIED) {
+          alert("Location permission was denied. Please allow GPS access.");
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          alert("GPS location is currently unavailable.");
+        } else if (error.code === error.TIMEOUT) {
+          alert("GPS request timed out. Please try again.");
+        } else {
+          alert("Unable to get your location.");
+        }
+
+        stopBroadcast(bId);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 15000
+      }
+    );
   };
 
-  window.stopBroadcast = function(bId) {
-    const safeId = bId.replace(/\s+/g, '_');
-    if (simInterval) clearInterval(simInterval);
-    
-    update(ref(db, `buses/${bId}`), { 
-      isActive: false, 
-      lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    });
-    
-    document.getElementById(`btnStart_${safeId}`).style.display = "flex";
-    document.getElementById(`btnStop_${safeId}`).style.display = "none";
+  window.stopBroadcast = async function (bId) {
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+
+    broadcastingBusId = null;
+
+    try {
+      await update(ref(db, `buses/${bId}`), {
+        isActive: false,
+        lastUpdated: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Firebase stop update failed:", error);
+    }
+
+    const safeId = bId.replace(/\s+/g, "_");
+    const startBtn = document.getElementById(`btnStart_${safeId}`);
+    const stopBtn = document.getElementById(`btnStop_${safeId}`);
+
+    if (startBtn) startBtn.style.display = "flex";
+    if (stopBtn) stopBtn.style.display = "none";
+
     document.getElementById("homeMapBox").style.display = "none";
   };
 
-  window.openAnnounceModal = () => document.getElementById("announceModal").style.display = "flex";
-  window.closeAnnounceModal = () => document.getElementById("announceModal").style.display = "none";
+  window.openAnnounceModal = () => {
+    document.getElementById("announceModal").style.display = "flex";
+  };
 
-  window.submitAnnouncement = function() {
+  window.closeAnnounceModal = () => {
+    document.getElementById("announceModal").style.display = "none";
+  };
+
+  window.submitAnnouncement = function () {
     const text = document.getElementById("modalInput").value.trim();
     if (!text) return;
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const timeStr = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
 
     set(ref(db, `announcements/${assignedBus}/latest`), {
-      text: text,
+      text,
       author: session.name || "Coordinator",
       busId: assignedBus,
       time: timeStr
     }).then(() => {
       closeAnnounceModal();
       document.getElementById("modalInput").value = "";
+    }).catch(error => {
+      console.error("Announcement failed:", error);
+      alert("Could not broadcast the announcement.");
     });
   };
 </script>
