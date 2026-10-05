@@ -200,7 +200,8 @@
 </div>
 
 <script type="module">
-  import { db, ref, set, update, onValue, push } from "./firebase-config.js";
+  import { db, ref, set, update, onValue } from "./firebase-config.js";
+  import { push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { AXIS_BUS_ROUTES } from "./bus-routes.js";
 
   const session = JSON.parse(localStorage.getItem("campusride_user") || "null");
