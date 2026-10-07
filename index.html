@@ -2,747 +2,4383 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CampusRide - College Bus Tracker</title>
-  
-  <!-- Official Google Maps SDK -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBle2g5HxjN-VnW3tGX_oce7vBQG8ygscM&libraries=geometry"></script>
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <title>CampusRide - Student Portal</title>
+
+  <!-- Google Maps - MAP UI WILL BE UPDATED LATER -->
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBle2g5HxjN-VnW3tGX_oce7vBQG8ygscM&libraries=geometry"
+  ></script>
+
+  <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
   <style>
+
+    /* =========================================================
+       CAMPUSRIDE DESIGN SYSTEM
+    ========================================================= */
+
     :root {
+      --navy: #0f172a;
+      --navy-2: #172554;
+
       --primary: #2563eb;
+      --primary-dark: #1d4ed8;
       --primary-light: #eff6ff;
+
+      --sky: #38bdf8;
+      --sky-light: #e0f2fe;
+
+      --green: #10b981;
+      --green-dark: #059669;
+      --green-light: #d1fae5;
+
+      --orange: #f59e0b;
+      --orange-light: #fef3c7;
+
+      --red: #ef4444;
+      --red-light: #fee2e2;
+
       --bg: #f8fafc;
       --surface: #ffffff;
+
       --text: #0f172a;
+      --text-soft: #334155;
       --text-muted: #64748b;
+
       --border: #e2e8f0;
-      --green: #16a34a;
-      --green-bg: #dcfce7;
-      --red: #dc2626;
-      --red-bg: #fee2e2;
+
+      --shadow-sm:
+        0 2px 8px rgba(15, 23, 42, 0.06);
+
+      --shadow-md:
+        0 8px 24px rgba(15, 23, 42, 0.08);
+
+      --shadow-lg:
+        0 16px 40px rgba(15, 23, 42, 0.14);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: #0b1329; display: flex; justify-content: center; min-height: 100vh; }
-    
+
+    /* =========================================================
+       RESET
+    ========================================================= */
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+    }
+
+    body {
+      background: var(--navy);
+      display: flex;
+      justify-content: center;
+      color: var(--text);
+    }
+
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+
+    /* =========================================================
+       MAIN APP
+    ========================================================= */
+
     .app-container {
       width: 100%;
       max-width: 430px;
-      height: 100vh;
+      min-height: 100vh;
+
       background: var(--bg);
+
+      position: relative;
+
       display: flex;
       flex-direction: column;
-      position: relative;
+
       overflow: hidden;
-      box-shadow: 0 0 40px rgba(0,0,0,0.5);
+
+      box-shadow:
+        0 0 50px rgba(0, 0, 0, 0.35);
     }
 
-    .view { display: none; flex-direction: column; height: 100%; width: 100%; overflow-y: auto; padding-bottom: 75px; }
-    .view.active { display: flex; }
+
+    /* =========================================================
+       VIEWS
+    ========================================================= */
+
+    .view {
+      display: none;
+
+      width: 100%;
+      height: 100vh;
+
+      flex-direction: column;
+
+      overflow-y: auto;
+
+      padding-bottom: 78px;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+
+    /* =========================================================
+       TOP BAR
+    ========================================================= */
 
     .top-bar {
+      width: 100%;
+
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 20px;
-      background: var(--surface);
+
+      padding: 14px 18px;
+
+      background: rgba(255, 255, 255, 0.96);
+
       border-bottom: 1px solid var(--border);
+
       position: sticky;
       top: 0;
+
       z-index: 100;
+
+      backdrop-filter: blur(12px);
     }
-    .top-bar .title-group h3 { font-size: 16px; font-weight: 700; color: var(--text); }
-    .top-bar .title-group p { font-size: 11px; color: var(--text-muted); }
-    .icon-btn { background: none; border: none; font-size: 22px; color: var(--text); cursor: pointer; display: flex; align-items: center; position: relative; }
-    .notif-badge { position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; display: none; }
 
-    .content-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
-    
-    .hero-banner {
-      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-      border-radius: 16px;
-      padding: 18px 20px;
-      color: white;
-    }
-    .hero-banner h2 { font-size: 18px; margin-bottom: 2px; }
-    .hero-banner p { font-size: 12px; opacity: 0.9; }
-
-    .section-head { display: flex; justify-content: space-between; align-items: center; }
-    .section-head h4 { font-size: 14px; font-weight: 700; color: var(--text); }
-
-    .bus-list { display: flex; flex-direction: column; gap: 10px; }
-    .bus-card {
-      background: var(--surface);
-      border-radius: 14px;
-      padding: 14px;
-      border: 1px solid var(--border);
+    .top-left,
+    .top-right {
       display: flex;
       align-items: center;
-      gap: 12px;
-      cursor: pointer;
+      gap: 8px;
     }
-    .bus-icon-wrap {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      background: var(--primary-light);
-      color: var(--primary);
+
+    .title-group {
+      text-align: center;
+    }
+
+    .title-group h3 {
+      font-size: 17px;
+      line-height: 1.1;
+
+      font-weight: 800;
+
+      color: var(--navy);
+      letter-spacing: -0.3px;
+    }
+
+    .title-group p {
+      margin-top: 3px;
+
+      font-size: 10px;
+
+      color: var(--text-muted);
+
+      font-weight: 500;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+
+      border: none;
+
+      border-radius: 11px;
+
+      background: transparent;
+
+      color: var(--navy);
+
       display: flex;
       align-items: center;
       justify-content: center;
+
+      font-size: 21px;
+
+      cursor: pointer;
+
+      position: relative;
+    }
+
+    .icon-btn:active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .notif-badge {
+      position: absolute;
+
+      top: 7px;
+      right: 7px;
+
+      width: 8px;
+      height: 8px;
+
+      border-radius: 50%;
+
+      background: var(--red);
+
+      border: 2px solid white;
+
+      display: none;
+    }
+
+
+    /* =========================================================
+       CONTENT
+    ========================================================= */
+
+    .content-body {
+      width: 100%;
+
+      padding: 16px;
+
+      display: flex;
+      flex-direction: column;
+
+      gap: 14px;
+    }
+
+
+    /* =========================================================
+       HERO
+    ========================================================= */
+
+    .hero-banner {
+      position: relative;
+
+      overflow: hidden;
+
+      padding: 20px;
+
+      border-radius: 20px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #0f172a 0%,
+          #172554 48%,
+          #2563eb 100%
+        );
+
+      color: white;
+
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hero-banner::before {
+      content: "";
+
+      position: absolute;
+
+      width: 170px;
+      height: 170px;
+
+      border-radius: 50%;
+
+      background: rgba(56, 189, 248, 0.12);
+
+      top: -70px;
+      right: -50px;
+    }
+
+    .hero-banner::after {
+      content: "";
+
+      position: absolute;
+
+      width: 120px;
+      height: 120px;
+
+      border-radius: 50%;
+
+      background: rgba(37, 99, 235, 0.18);
+
+      bottom: -65px;
+      left: -45px;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-small {
+      font-size: 10px;
+
+      text-transform: uppercase;
+
+      letter-spacing: 1.2px;
+
+      color: #bfdbfe;
+
+      font-weight: 700;
+
+      margin-bottom: 7px;
+    }
+
+    .hero-banner h2 {
+      font-size: 21px;
+
+      line-height: 1.2;
+
+      margin-bottom: 7px;
+
+      font-weight: 800;
+    }
+
+    .hero-banner p {
+      font-size: 12px;
+
+      color: #dbeafe;
+
+      line-height: 1.5;
+    }
+
+    .hero-live {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+      margin-top: 14px;
+
+      padding: 6px 10px;
+
+      border-radius: 999px;
+
+      background: rgba(16, 185, 129, 0.18);
+
+      color: #a7f3d0;
+
+      font-size: 10px;
+
+      font-weight: 700;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+
+      border-radius: 50%;
+
+      background: #34d399;
+
+      box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.14);
+    }
+
+
+    /* =========================================================
+       SECTION HEADER
+    ========================================================= */
+
+    .section-head {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      margin-top: 2px;
+    }
+
+    .section-title {
+      font-size: 14px;
+
+      font-weight: 800;
+
+      color: var(--navy);
+    }
+
+    .section-subtitle {
+      font-size: 10px;
+
+      color: var(--text-muted);
+
+      font-weight: 600;
+    }
+
+
+    /* =========================================================
+       MY BUS FEATURE CARD
+    ========================================================= */
+
+    .my-bus-card {
+      background: white;
+
+      border: 1px solid var(--border);
+
+      border-radius: 18px;
+
+      padding: 15px;
+
+      box-shadow: var(--shadow-sm);
+
+      cursor: pointer;
+
+      transition: 0.2s ease;
+    }
+
+    .my-bus-card:active {
+      transform: scale(0.99);
+    }
+
+    .my-bus-top {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+    }
+
+    .bus-main {
+      display: flex;
+
+      align-items: center;
+
+      gap: 12px;
+    }
+
+    .bus-icon {
+      width: 48px;
+      height: 48px;
+
+      border-radius: 14px;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--primary-light),
+          var(--sky-light)
+        );
+
+      color: var(--primary);
+
+      font-size: 24px;
+    }
+
+    .bus-main h3 {
+      font-size: 16px;
+
+      font-weight: 800;
+
+      color: var(--navy);
+    }
+
+    .bus-main p {
+      margin-top: 3px;
+
+      font-size: 10px;
+
+      color: var(--text-muted);
+
+      line-height: 1.4;
+    }
+
+    .status-badge {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 5px;
+
+      padding: 5px 9px;
+
+      border-radius: 999px;
+
+      font-size: 9px;
+
+      font-weight: 800;
+
+      letter-spacing: 0.3px;
+    }
+
+    .status-live {
+      background: var(--green-light);
+
+      color: var(--green-dark);
+    }
+
+    .status-off {
+      background: var(--red-light);
+
+      color: #b91c1c;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+
+      border-radius: 50%;
+
+      background: currentColor;
+    }
+
+    .bus-card-route {
+      margin-top: 14px;
+
+      padding-top: 12px;
+
+      border-top: 1px solid var(--border);
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      font-size: 11px;
+
+      color: var(--text-soft);
+
+      line-height: 1.4;
+    }
+
+    .route-icon {
+      color: var(--primary);
+
+      font-size: 17px;
+    }
+
+
+    /* =========================================================
+       QUICK STATS
+    ========================================================= */
+
+    .quick-grid {
+      display: grid;
+
+      grid-template-columns: repeat(2, 1fr);
+
+      gap: 10px;
+    }
+
+    .quick-card {
+      background: white;
+
+      border: 1px solid var(--border);
+
+      border-radius: 15px;
+
+      padding: 14px;
+
+      box-shadow: var(--shadow-sm);
+    }
+
+    .quick-icon {
+      width: 32px;
+      height: 32px;
+
+      border-radius: 10px;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      font-size: 17px;
+
+      margin-bottom: 9px;
+    }
+
+    .quick-icon.blue {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .quick-icon.green {
+      background: var(--green-light);
+      color: var(--green-dark);
+    }
+
+    .quick-icon.orange {
+      background: var(--orange-light);
+      color: #b45309;
+    }
+
+    .quick-icon.sky {
+      background: var(--sky-light);
+      color: #0284c7;
+    }
+
+    .quick-value {
+      font-size: 16px;
+
+      font-weight: 800;
+
+      color: var(--navy);
+    }
+
+    .quick-label {
+      margin-top: 3px;
+
+      font-size: 10px;
+
+      color: var(--text-muted);
+    }
+
+
+    /* =========================================================
+       BUS FEE CARD
+    ========================================================= */
+
+    .fee-card {
+      position: relative;
+
+      overflow: hidden;
+
+      background:
+        linear-gradient(
+          135deg,
+          #ffffff 0%,
+          #f0fdf4 100%
+        );
+
+      border: 1px solid #bbf7d0;
+
+      border-radius: 18px;
+
+      padding: 17px;
+
+      box-shadow: var(--shadow-sm);
+    }
+
+    .fee-card::after {
+      content: "";
+
+      position: absolute;
+
+      width: 110px;
+      height: 110px;
+
+      border-radius: 50%;
+
+      background: rgba(16, 185, 129, 0.08);
+
+      right: -40px;
+      top: -40px;
+    }
+
+    .fee-header {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      position: relative;
+
+      z-index: 2;
+    }
+
+    .fee-title {
+      display: flex;
+
+      align-items: center;
+
+      gap: 9px;
+    }
+
+    .fee-icon {
+      width: 38px;
+      height: 38px;
+
+      border-radius: 11px;
+
+      background: var(--green-light);
+
+      color: var(--green-dark);
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
       font-size: 20px;
     }
-    .bus-icon-wrap.off { background: var(--red-bg); color: var(--red); }
-    .bus-info { flex: 1; }
-    .bus-info-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
-    .bus-id { font-size: 14px; font-weight: 700; color: var(--text); }
-    .status-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
-    .status-live { background: var(--green-bg); color: var(--green); }
-    .status-off { background: var(--red-bg); color: var(--red); }
-    .bus-route { font-size: 12px; color: var(--text-muted); }
+
+    .fee-title h4 {
+      font-size: 14px;
+
+      font-weight: 800;
+
+      color: var(--navy);
+    }
+
+    .fee-title p {
+      font-size: 9px;
+
+      color: var(--text-muted);
+
+      margin-top: 2px;
+    }
+
+    .fee-status {
+      padding: 5px 9px;
+
+      border-radius: 999px;
+
+      background: #dcfce7;
+
+      color: #15803d;
+
+      font-size: 9px;
+
+      font-weight: 800;
+    }
+
+    .fee-main {
+      position: relative;
+
+      z-index: 2;
+
+      margin-top: 14px;
+
+      display: flex;
+
+      align-items: flex-end;
+
+      justify-content: space-between;
+    }
+
+    .fee-amount {
+      font-size: 22px;
+
+      font-weight: 900;
+
+      color: var(--navy);
+    }
+
+    .fee-period {
+      font-size: 10px;
+
+      color: var(--text-muted);
+
+      margin-bottom: 3px;
+    }
+
+    .fee-note {
+      margin-top: 10px;
+
+      font-size: 10px;
+
+      line-height: 1.5;
+
+      color: var(--text-muted);
+
+      position: relative;
+
+      z-index: 2;
+    }
+
+
+    /* =========================================================
+       ANNOUNCEMENT
+    ========================================================= */
 
     .announce-card {
-      background: var(--primary-light);
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
-      padding: 14px;
-    }
-    .announce-card h5 { font-size: 13px; color: var(--primary); margin-bottom: 4px; display: flex; justify-content: space-between; }
-    .announce-card p { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+      background: white;
 
-    /* Map View Layout */
-    #mapView { position: relative; padding-bottom: 0; height: 100vh; overflow: hidden; }
-    #trackingMap { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
-
-    /* Clean Floating Bus Status Bar */
-    .clean-bus-bar {
-      position: absolute;
-      top: 65px;
-      left: 14px;
-      right: 14px;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 14px;
-      padding: 10px 16px;
-      z-index: 20;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.12);
       border: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .clean-bus-title { font-size: 15px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
-    .clean-bus-actions { display: flex; align-items: center; gap: 10px; }
-    .icon-map-launch { background: var(--bg); border: 1px solid var(--border); width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 18px; cursor: pointer; }
 
-    /* Collapsible Bottom Route Sheet (Where Is My Train Style) */
-    .collapsible-sheet {
+      border-radius: 16px;
+
+      padding: 15px;
+
+      box-shadow: var(--shadow-sm);
+    }
+
+    .announce-head {
+      display: flex;
+
+      align-items: flex-start;
+
+      gap: 10px;
+    }
+
+    .announce-icon {
+      width: 36px;
+      height: 36px;
+
+      flex-shrink: 0;
+
+      border-radius: 11px;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      background: var(--orange-light);
+
+      color: #b45309;
+
+      font-size: 18px;
+    }
+
+    .announce-content {
+      flex: 1;
+    }
+
+    .announce-content h4 {
+      font-size: 13px;
+
+      font-weight: 800;
+
+      color: var(--navy);
+    }
+
+    .announce-content p {
+      margin-top: 4px;
+
+      font-size: 11px;
+
+      line-height: 1.5;
+
+      color: var(--text-muted);
+    }
+
+    .announce-time {
+      margin-top: 10px;
+
+      font-size: 9px;
+
+      color: var(--text-muted);
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 5px;
+    }
+
+
+    /* =========================================================
+       FLEET CARDS
+    ========================================================= */
+
+    .bus-list {
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 9px;
+    }
+
+    .bus-card {
+      width: 100%;
+
+      background: white;
+
+      border: 1px solid var(--border);
+
+      border-radius: 15px;
+
+      padding: 12px;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 11px;
+
+      cursor: pointer;
+
+      transition: 0.2s ease;
+
+      box-shadow: var(--shadow-sm);
+    }
+
+    .bus-card:active {
+      transform: scale(0.99);
+    }
+
+    .bus-icon-wrap {
+      width: 43px;
+      height: 43px;
+
+      flex-shrink: 0;
+
+      border-radius: 12px;
+
+      background: var(--green-light);
+
+      color: var(--green-dark);
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      font-size: 20px;
+    }
+
+    .bus-icon-wrap.off {
+      background: #f1f5f9;
+
+      color: #64748b;
+    }
+
+    .bus-info {
+      flex: 1;
+
+      min-width: 0;
+    }
+
+    .bus-info-top {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 8px;
+
+      margin-bottom: 3px;
+    }
+
+    .bus-id {
+      font-size: 13px;
+
+      font-weight: 800;
+
+      color: var(--navy);
+    }
+
+    .bus-route {
+      font-size: 10px;
+
+      line-height: 1.4;
+
+      color: var(--text-muted);
+
+      white-space: nowrap;
+
+      overflow: hidden;
+
+      text-overflow: ellipsis;
+    }
+
+
+    /* =========================================================
+       MAP VIEW
+    ========================================================= */
+
+    #mapView {
+      position: relative;
+
+      height: 100vh;
+
+      padding-bottom: 0;
+
+      overflow: hidden;
+    }
+
+    #trackingMap {
+      width: 100%;
+      height: 100%;
+
       position: absolute;
-      bottom: 65px;
+
+      inset: 0;
+
+      z-index: 1;
+    }
+
+    .map-topbar {
+      position: absolute;
+
+      top: 0;
       left: 0;
       right: 0;
-      background: var(--surface);
-      border-top-left-radius: 22px;
-      border-top-right-radius: 22px;
-      box-shadow: 0 -6px 25px rgba(0,0,0,0.12);
-      z-index: 30;
-      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-      max-height: 48vh;
-      display: flex;
-      flex-direction: column;
+
+      z-index: 20;
+
+      background: rgba(255, 255, 255, 0.94);
+
+      backdrop-filter: blur(12px);
+
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     }
-    .collapsible-sheet.collapsed { max-height: 84px; }
-    .sheet-handle-bar {
-      padding: 10px 20px;
-      cursor: pointer;
+
+    .clean-bus-bar {
+      position: absolute;
+
+      top: 66px;
+
+      left: 13px;
+      right: 13px;
+
+      z-index: 20;
+
+      background: rgba(255, 255, 255, 0.96);
+
+      backdrop-filter: blur(12px);
+
+      border-radius: 16px;
+
+      padding: 10px 13px;
+
       display: flex;
-      flex-direction: column;
+
       align-items: center;
+
+      justify-content: space-between;
+
+      box-shadow: var(--shadow-md);
+
+      border: 1px solid rgba(226, 232, 240, 0.9);
+    }
+
+    .clean-bus-title {
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      font-size: 14px;
+
+      font-weight: 800;
+
+      color: var(--navy);
+    }
+
+    .clean-bus-actions {
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+    }
+
+    .icon-map-launch {
+      width: 34px;
+      height: 34px;
+
+      border: 1px solid var(--border);
+
+      background: #f8fafc;
+
+      border-radius: 10px;
+
+      color: var(--primary);
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      font-size: 17px;
+
+      cursor: pointer;
+    }
+
+
+    /* =========================================================
+       ROUTE SHEET
+    ========================================================= */
+
+    .collapsible-sheet {
+      position: absolute;
+
+      bottom: 65px;
+
+      left: 0;
+      right: 0;
+
+      z-index: 30;
+
+      background: white;
+
+      border-radius: 22px 22px 0 0;
+
+      box-shadow:
+        0 -8px 28px rgba(15, 23, 42, 0.14);
+
+      max-height: 47vh;
+
+      display: flex;
+
+      flex-direction: column;
+
+      transition: max-height 0.3s ease;
+    }
+
+    .collapsible-sheet.collapsed {
+      max-height: 82px;
+    }
+
+    .sheet-handle-bar {
+      padding: 10px 18px;
+
+      cursor: pointer;
+
       border-bottom: 1px solid var(--border);
     }
-    .sheet-drag-pill { width: 36px; height: 4px; background: #cbd5e1; border-radius: 3px; margin-bottom: 8px; }
-    .sheet-header-summary { width: 100%; display: flex; justify-content: space-between; align-items: center; }
-    
-    .sheet-body { flex: 1; overflow-y: auto; padding: 14px 20px 24px; }
 
-    /* Train-style Stop Timeline */
-    .train-timeline { position: relative; padding-left: 28px; margin-top: 4px; }
-    .train-timeline::before { content: ''; position: absolute; left: 9px; top: 12px; bottom: 12px; width: 3px; background: #e2e8f0; border-radius: 2px; }
-    .train-stop { position: relative; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 500; color: var(--text-muted); }
-    .train-stop::before { content: ''; position: absolute; left: -24px; top: 16px; width: 11px; height: 11px; border-radius: 50%; background: #94a3b8; border: 2px solid white; z-index: 2; }
-    .train-stop.passed { color: var(--text); }
-    .train-stop.passed::before { background: var(--green); }
-    .train-stop.current { color: var(--primary); font-weight: 700; }
-    .train-stop.current::before { background: var(--primary); box-shadow: 0 0 0 4px #bfdbfe; width: 13px; height: 13px; left: -25px; }
-    .train-bus-badge { background: var(--primary); color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; }
+    .sheet-drag-pill {
+      width: 36px;
+      height: 4px;
 
-    /* Bottom Navigation */
+      background: #cbd5e1;
+
+      border-radius: 999px;
+
+      margin: 0 auto 9px;
+    }
+
+    .sheet-header-summary {
+      width: 100%;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+    }
+
+    .sheet-label {
+      font-size: 9px;
+
+      color: var(--text-muted);
+
+      text-transform: uppercase;
+
+      letter-spacing: 0.5px;
+    }
+
+    .sheet-value {
+      margin-top: 2px;
+
+      font-size: 13px;
+
+      color: var(--navy);
+
+      font-weight: 800;
+    }
+
+    .sheet-right {
+      display: flex;
+
+      align-items: center;
+
+      gap: 9px;
+    }
+
+    .sheet-body {
+      flex: 1;
+
+      overflow-y: auto;
+
+      padding: 12px 18px 20px;
+    }
+
+
+    /* =========================================================
+       TIMELINE
+    ========================================================= */
+
+    .train-timeline {
+      position: relative;
+
+      padding-left: 27px;
+    }
+
+    .train-timeline::before {
+      content: "";
+
+      position: absolute;
+
+      left: 9px;
+
+      top: 11px;
+      bottom: 11px;
+
+      width: 3px;
+
+      background: #e2e8f0;
+
+      border-radius: 3px;
+    }
+
+    .train-stop {
+      position: relative;
+
+      padding: 9px 0;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 10px;
+
+      font-size: 12px;
+
+      color: var(--text-muted);
+    }
+
+    .train-stop::before {
+      content: "";
+
+      position: absolute;
+
+      left: -23px;
+
+      top: 14px;
+
+      width: 10px;
+      height: 10px;
+
+      border-radius: 50%;
+
+      background: #94a3b8;
+
+      border: 2px solid white;
+
+      z-index: 2;
+    }
+
+    .train-stop.passed {
+      color: var(--text-soft);
+    }
+
+    .train-stop.passed::before {
+      background: var(--green);
+    }
+
+    .train-stop.current {
+      color: var(--primary);
+
+      font-weight: 800;
+    }
+
+    .train-stop.current::before {
+      background: var(--primary);
+
+      box-shadow:
+        0 0 0 4px #dbeafe;
+
+      width: 12px;
+      height: 12px;
+
+      left: -24px;
+    }
+
+    .train-bus-badge {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 4px;
+
+      margin-left: 5px;
+
+      padding: 2px 7px;
+
+      border-radius: 999px;
+
+      background: var(--primary);
+
+      color: white;
+
+      font-size: 8px;
+
+      font-weight: 800;
+    }
+
+
+    /* =========================================================
+       ALERTS VIEW
+    ========================================================= */
+
+    .alert-empty {
+      background: white;
+
+      border: 1px solid var(--border);
+
+      border-radius: 18px;
+
+      padding: 28px 18px;
+
+      text-align: center;
+    }
+
+    .alert-empty-icon {
+      width: 52px;
+      height: 52px;
+
+      margin: 0 auto 12px;
+
+      border-radius: 16px;
+
+      background: var(--green-light);
+
+      color: var(--green-dark);
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      font-size: 25px;
+    }
+
+    .alert-empty h3 {
+      font-size: 15px;
+
+      font-weight: 800;
+
+      color: var(--navy);
+    }
+
+    .alert-empty p {
+      margin-top: 5px;
+
+      font-size: 11px;
+
+      line-height: 1.5;
+
+      color: var(--text-muted);
+    }
+
+
+    /* =========================================================
+       BOTTOM NAV
+    ========================================================= */
+
     .bottom-nav {
       position: absolute;
+
+      left: 0;
+      right: 0;
       bottom: 0;
+
       width: 100%;
+
       height: 65px;
-      background: var(--surface);
+
+      background: rgba(255, 255, 255, 0.97);
+
       border-top: 1px solid var(--border);
+
       display: flex;
-      justify-content: space-around;
+
       align-items: center;
+
+      justify-content: space-around;
+
       z-index: 100;
+
+      backdrop-filter: blur(12px);
     }
-    .nav-tab { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 10px; cursor: pointer; border: none; background: none; flex: 1; }
-    .nav-tab i { font-size: 20px; }
-    .nav-tab.active { color: var(--primary); font-weight: 600; }
 
-    .drawer-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.7); backdrop-filter: blur(4px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
-    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
-    .drawer { width: 78%; height: 100%; background: #0b1329; color: white; padding: 24px 20px; display: flex; flex-direction: column; transform: translateX(-100%); transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-    .drawer-overlay.open .drawer { transform: translateX(0); }
-    .drawer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-    .drawer-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 8px; color: #cbd5e1; font-size: 14px; cursor: pointer; text-decoration: none; }
-    .drawer-item.active { background: var(--primary); color: white; }
+    .nav-tab {
+      height: 100%;
 
-    .app-modal { position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 2500; display: none; align-items: flex-end; justify-content: center; }
-    .app-modal.active { display: flex; }
-    .app-modal-card { background: var(--surface); width: 100%; max-width: 430px; border-radius: 20px 20px 0 0; padding: 22px 20px 30px; max-height: 80vh; overflow-y: auto; }
-    .contact-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; }
-    .btn-action-call { padding: 6px 12px; border-radius: 8px; background: var(--primary); color: white; text-decoration: none; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+      flex: 1;
+
+      border: none;
+
+      background: transparent;
+
+      color: var(--text-muted);
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 4px;
+
+      font-size: 9px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+    }
+
+    .nav-tab i {
+      font-size: 20px;
+    }
+
+    .nav-tab.active {
+      color: var(--primary);
+
+      font-weight: 800;
+    }
+
+
+    /* =========================================================
+       DRAWER
+    ========================================================= */
+
+    .drawer-overlay {
+      position: absolute;
+
+      inset: 0;
+
+      z-index: 1500;
+
+      background: rgba(15, 23, 42, 0.68);
+
+      backdrop-filter: blur(4px);
+
+      opacity: 0;
+
+      pointer-events: none;
+
+      transition: opacity 0.25s ease;
+    }
+
+    .drawer-overlay.open {
+      opacity: 1;
+
+      pointer-events: auto;
+    }
+
+    .drawer {
+      width: 78%;
+
+      height: 100%;
+
+      padding: 25px 18px;
+
+      background: var(--navy);
+
+      color: white;
+
+      transform: translateX(-100%);
+
+      transition:
+        transform 0.25s
+        cubic-bezier(0.4, 0, 0.2, 1);
+
+      display: flex;
+
+      flex-direction: column;
+    }
+
+    .drawer-overlay.open .drawer {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      margin-bottom: 28px;
+    }
+
+    .drawer-brand {
+      display: flex;
+
+      align-items: center;
+
+      gap: 10px;
+
+      font-size: 17px;
+
+      font-weight: 800;
+    }
+
+    .drawer-brand i {
+      color: var(--sky);
+
+      font-size: 24px;
+    }
+
+    .drawer-close {
+      color: white;
+    }
+
+    .drawer-menu {
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 6px;
+    }
+
+    .drawer-item {
+      width: 100%;
+
+      padding: 13px 14px;
+
+      border-radius: 11px;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 12px;
+
+      color: #cbd5e1;
+
+      font-size: 13px;
+
+      font-weight: 600;
+
+      text-decoration: none;
+
+      cursor: pointer;
+    }
+
+    .drawer-item i {
+      font-size: 19px;
+    }
+
+    .drawer-item.active {
+      background: var(--primary);
+
+      color: white;
+    }
+
+    .drawer-item.logout-item {
+      margin-top: 12px;
+
+      color: #fca5a5;
+
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .drawer-footer {
+      margin-top: auto;
+
+      padding-top: 20px;
+
+      color: #64748b;
+
+      font-size: 9px;
+
+      line-height: 1.5;
+    }
+
+
+    /* =========================================================
+       MODAL
+    ========================================================= */
+
+    .app-modal {
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 2500;
+
+      background: rgba(15, 23, 42, 0.6);
+
+      backdrop-filter: blur(5px);
+
+      display: none;
+
+      align-items: flex-end;
+
+      justify-content: center;
+    }
+
+    .app-modal.active {
+      display: flex;
+    }
+
+    .app-modal-card {
+      width: 100%;
+
+      max-width: 430px;
+
+      max-height: 80vh;
+
+      overflow-y: auto;
+
+      background: white;
+
+      border-radius: 22px 22px 0 0;
+
+      padding: 22px 18px 30px;
+    }
+
+    .modal-header {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      font-size: 15px;
+
+      font-weight: 800;
+
+      color: var(--navy);
+    }
+
+    .modal-title i {
+      color: var(--primary);
+    }
+
+    .contact-item {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 10px;
+
+      padding: 13px;
+
+      margin-bottom: 8px;
+
+      background: var(--bg);
+
+      border: 1px solid var(--border);
+
+      border-radius: 13px;
+    }
+
+    .contact-item h5 {
+      font-size: 13px;
+
+      color: var(--navy);
+    }
+
+    .contact-item p {
+      margin-top: 3px;
+
+      font-size: 10px;
+
+      color: var(--text-muted);
+    }
+
+    .btn-action-call {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 5px;
+
+      padding: 7px 11px;
+
+      border-radius: 9px;
+
+      background: var(--primary);
+
+      color: white;
+
+      text-decoration: none;
+
+      font-size: 10px;
+
+      font-weight: 700;
+    }
+
+
+    /* =========================================================
+       SMALL SCREEN ADJUSTMENT
+    ========================================================= */
+
+    @media (max-width: 350px) {
+
+      .content-body {
+        padding: 13px;
+      }
+
+      .hero-banner {
+        padding: 17px;
+      }
+
+      .hero-banner h2 {
+        font-size: 19px;
+      }
+
+      .quick-card {
+        padding: 12px;
+      }
+
+    }
+
   </style>
 </head>
+
+
 <body>
 
 <div class="app-container">
-  
-  <!-- Slide Menu -->
-  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)">
-    <div class="drawer" onclick="event.stopPropagation()">
+
+
+  <!-- =======================================================
+       DRAWER
+  ======================================================== -->
+
+  <div
+    class="drawer-overlay"
+    id="drawerOverlay"
+    onclick="toggleDrawer(false)"
+  >
+
+    <div
+      class="drawer"
+      onclick="event.stopPropagation()"
+    >
+
       <div class="drawer-header">
-        <div style="display: flex; align-items: center; gap: 10px; font-weight: 700;">
-          <i class="ph-bold ph-bus" style="font-size: 22px; color: #38bdf8;"></i> CampusRide
+
+        <div class="drawer-brand">
+          <i class="ph-bold ph-bus"></i>
+          <span>CampusRide</span>
         </div>
-        <button class="icon-btn" style="color: white;" onclick="toggleDrawer(false)"><i class="ph ph-x"></i></button>
+
+        <button
+          class="icon-btn drawer-close"
+          onclick="toggleDrawer(false)"
+        >
+          <i class="ph ph-x"></i>
+        </button>
+
       </div>
-      <div style="display: flex; flex-direction: column; gap: 6px;">
-        <a class="drawer-item active" onclick="switchView('homeView'); toggleDrawer(false)"><i class="ph ph-house"></i> Home</a>
-        <a class="drawer-item" onclick="switchView('mapView'); toggleDrawer(false)"><i class="ph ph-navigation-arrow"></i> Live Map</a>
-        <a class="drawer-item" onclick="switchView('notifView'); toggleDrawer(false)"><i class="ph ph-bell"></i> Alerts</a>
-        <a class="drawer-item" onclick="openModal('supportModal'); toggleDrawer(false)"><i class="ph ph-headset"></i> Support</a>
-        <a class="drawer-item" onclick="logout()"><i class="ph ph-sign-out"></i> Logout</a>
+
+
+      <div class="drawer-menu">
+
+        <a
+          class="drawer-item active"
+          id="drawerHome"
+          onclick="
+            switchView(
+              'homeView',
+              document.querySelectorAll('.nav-tab')[0]
+            );
+            toggleDrawer(false);
+          "
+        >
+          <i class="ph ph-house"></i>
+          <span>Home</span>
+        </a>
+
+
+        <a
+          class="drawer-item"
+          id="drawerMap"
+          onclick="
+            switchView(
+              'mapView',
+              document.querySelectorAll('.nav-tab')[1]
+            );
+            toggleDrawer(false);
+          "
+        >
+          <i class="ph ph-navigation-arrow"></i>
+          <span>Live Map</span>
+        </a>
+
+
+        <a
+          class="drawer-item"
+          id="drawerAlerts"
+          onclick="
+            switchView(
+              'notifView',
+              document.querySelectorAll('.nav-tab')[2]
+            );
+            toggleDrawer(false);
+          "
+        >
+          <i class="ph ph-bell"></i>
+          <span>Alerts</span>
+        </a>
+
+
+        <a
+          class="drawer-item"
+          onclick="
+            openModal('supportModal');
+            toggleDrawer(false);
+          "
+        >
+          <i class="ph ph-headset"></i>
+          <span>Transport Support</span>
+        </a>
+
+
+        <a
+          class="drawer-item logout-item"
+          onclick="logout()"
+        >
+          <i class="ph ph-sign-out"></i>
+          <span>Logout</span>
+        </a>
+
       </div>
+
+
+      <div class="drawer-footer">
+        CampusRide • Axis Colleges<br>
+        Smart • Safe • Connected
+      </div>
+
     </div>
+
   </div>
 
-  <!-- HOME VIEW -->
-  <div class="view active" id="homeView">
+
+  <!-- =======================================================
+       HOME VIEW
+  ======================================================== -->
+
+  <div
+    class="view active"
+    id="homeView"
+  >
+
+    <!-- TOP BAR -->
+
     <div class="top-bar">
-      <button class="icon-btn" onclick="toggleDrawer(true)"><i class="ph-bold ph-list"></i></button>
-      <div class="title-group" style="text-align: center;">
-        <h3>CampusRide</h3>
-        <p>Axis Colleges Transit</p>
+
+      <div class="top-left">
+
+        <button
+          class="icon-btn"
+          onclick="toggleDrawer(true)"
+        >
+          <i class="ph-bold ph-list"></i>
+        </button>
+
       </div>
-      <button class="icon-btn" onclick="switchView('notifView', document.querySelectorAll('.nav-tab')[2])">
-        <i class="ph-bold ph-bell"></i>
-        <div class="notif-badge" id="topNotifBadge"></div>
-      </button>
+
+
+      <div class="title-group">
+
+        <h3>CampusRide</h3>
+
+        <p>Axis Colleges Transit</p>
+
+      </div>
+
+
+      <div class="top-right">
+
+        <button
+          class="icon-btn"
+          onclick="
+            switchView(
+              'notifView',
+              document.querySelectorAll('.nav-tab')[2]
+            )
+          "
+        >
+
+          <i class="ph-bold ph-bell"></i>
+
+          <div
+            class="notif-badge"
+            id="topNotifBadge"
+          ></div>
+
+        </button>
+
+      </div>
+
     </div>
+
+
+    <!-- CONTENT -->
 
     <div class="content-body">
+
+
+      <!-- HERO -->
+
       <div class="hero-banner">
-        <h2 id="heroName">Welcome 👋</h2>
-        <p id="heroRoute">Assigned Bus: BUS 1</p>
+
+        <div class="hero-content">
+
+          <div class="hero-small">
+            Student Transport Portal
+          </div>
+
+          <h2 id="heroName">
+            Welcome 👋
+          </h2>
+
+          <p id="heroRoute">
+            Your assigned college bus
+          </p>
+
+          <div
+            class="hero-live"
+            id="heroLiveBadge"
+          >
+            <span class="live-dot"></span>
+            Transport system connected
+          </div>
+
+        </div>
+
       </div>
+
+
+      <!-- MY BUS -->
 
       <div class="section-head">
-        <h4>My Bus Delay Updates</h4>
+
+        <span class="section-title">
+          My Bus
+        </span>
+
+        <span class="section-subtitle">
+          ASSIGNED
+        </span>
+
       </div>
-      <div class="announce-card" id="studentAnnounceBox">
-        <h5 id="announceTitle">Regular Schedule <span style="font-size: 10px; color: var(--text-muted);">Normal</span></h5>
-        <p id="announceMsg">No active delays reported for your bus route.</p>
+
+
+      <div
+        class="my-bus-card"
+        id="myBusCard"
+        onclick="selectAndTrackBus(assignedBus)"
+      >
+
+        <div class="my-bus-top">
+
+          <div class="bus-main">
+
+            <div class="bus-icon">
+              <i class="ph-fill ph-bus"></i>
+            </div>
+
+            <div>
+
+              <h3 id="myBusId">
+                BUS 1
+              </h3>
+
+              <p id="myBusRoute">
+                Loading route...
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="status-badge status-off"
+            id="myBusStatus"
+          >
+
+            <span class="status-dot"></span>
+
+            OFFLINE
+
+          </div>
+
+        </div>
+
+
+        <div class="bus-card-route">
+
+          <i class="ph-bold ph-map-pin route-icon"></i>
+
+          <span id="myBusRouteDetail">
+            Tap to open live route
+          </span>
+
+          <i
+            class="ph-bold ph-caret-right"
+            style="
+              margin-left:auto;
+              color:#94a3b8;
+            "
+          ></i>
+
+        </div>
+
       </div>
+
+
+      <!-- QUICK STATS -->
 
       <div class="section-head">
-        <h4>Campus Fleet</h4>
-        <span style="font-size: 12px; color: var(--primary); font-weight: 600;">ALL BUSES</span>
+
+        <span class="section-title">
+          Quick Overview
+        </span>
+
       </div>
 
-      <div class="bus-list" id="busCardsList"></div>
+
+      <div class="quick-grid">
+
+
+        <div class="quick-card">
+
+          <div class="quick-icon blue">
+            <i class="ph-bold ph-bus"></i>
+          </div>
+
+          <div
+            class="quick-value"
+            id="quickBusStatus"
+          >
+            Offline
+          </div>
+
+          <div class="quick-label">
+            Bus Status
+          </div>
+
+        </div>
+
+
+        <div class="quick-card">
+
+          <div class="quick-icon green">
+            <i class="ph-bold ph-navigation-arrow"></i>
+          </div>
+
+          <div
+            class="quick-value"
+            id="quickRouteStatus"
+          >
+            Ready
+          </div>
+
+          <div class="quick-label">
+            Route Status
+          </div>
+
+        </div>
+
+
+        <div class="quick-card">
+
+          <div class="quick-icon orange">
+            <i class="ph-bold ph-clock"></i>
+          </div>
+
+          <div
+            class="quick-value"
+            id="quickUpdate"
+          >
+            —
+          </div>
+
+          <div class="quick-label">
+            Last Update
+          </div>
+
+        </div>
+
+
+        <div class="quick-card">
+
+          <div class="quick-icon sky">
+            <i class="ph-bold ph-map-pin"></i>
+          </div>
+
+          <div
+            class="quick-value"
+            id="quickStop"
+          >
+            —
+          </div>
+
+          <div class="quick-label">
+            Nearest Stop
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- BUS FEE -->
+
+      <div class="section-head">
+
+        <span class="section-title">
+          Bus Fee
+        </span>
+
+        <span class="section-subtitle">
+          TRANSPORT
+        </span>
+
+      </div>
+
+
+      <div class="fee-card">
+
+        <div class="fee-header">
+
+          <div class="fee-title">
+
+            <div class="fee-icon">
+              <i class="ph-bold ph-wallet"></i>
+            </div>
+
+            <div>
+
+              <h4>
+                Bus Service Fee
+              </h4>
+
+              <p>
+                Your assigned bus transport
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="fee-status">
+            INFORMATION
+          </div>
+
+        </div>
+
+
+        <div class="fee-main">
+
+          <div>
+
+            <div
+              class="fee-amount"
+              id="busFeeAmount"
+            >
+              ₹ —
+            </div>
+
+            <div class="fee-period">
+              Fee amount
+            </div>
+
+          </div>
+
+          <i
+            class="ph-fill ph-credit-card"
+            style="
+              font-size:34px;
+              color:#86efac;
+            "
+          ></i>
+
+        </div>
+
+
+        <p class="fee-note">
+          Transport fee information for the assigned bus.
+          The official amount can be updated from the
+          project settings.
+        </p>
+
+      </div>
+
+
+      <!-- ANNOUNCEMENT -->
+
+      <div class="section-head">
+
+        <span class="section-title">
+          Latest Transport Update
+        </span>
+
+        <span class="section-subtitle">
+          LIVE
+        </span>
+
+      </div>
+
+
+      <div
+        class="announce-card"
+        id="studentAnnounceBox"
+      >
+
+        <div class="announce-head">
+
+          <div class="announce-icon">
+            <i class="ph-bold ph-megaphone"></i>
+          </div>
+
+          <div class="announce-content">
+
+            <h4 id="announceTitle">
+              Regular Schedule
+            </h4>
+
+            <p id="announceMsg">
+              No active delays reported for your bus route.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="announce-time">
+
+          <i class="ph-bold ph-clock"></i>
+
+          <span id="announceTime">
+            No recent update
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- ALL BUSES -->
+
+      <div class="section-head">
+
+        <span class="section-title">
+          Campus Fleet
+        </span>
+
+        <span class="section-subtitle">
+          ALL BUSES
+        </span>
+
+      </div>
+
+
+      <div
+        class="bus-list"
+        id="busCardsList"
+      ></div>
+
+
     </div>
+
   </div>
 
-  <!-- MAP TRACKING VIEW (FULL GOOGLE MAPS) -->
-  <div class="view" id="mapView">
-    <div class="top-bar" style="position: absolute; top: 0; left: 0; right: 0; z-index: 20; background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);">
-      <button class="icon-btn" onclick="switchView('homeView', document.querySelectorAll('.nav-tab')[0])"><i class="ph-bold ph-arrow-left"></i></button>
-      <div class="title-group" style="text-align: center;">
-        <h3 id="trackBusTitle">BUS 1</h3>
-        <p id="trackCoordName">Real-Time Navigation</p>
+
+  <!-- =======================================================
+       MAP VIEW
+  ======================================================== -->
+
+  <div
+    class="view"
+    id="mapView"
+  >
+
+    <div class="map-topbar">
+
+      <div class="top-bar">
+
+        <button
+          class="icon-btn"
+          onclick="
+            switchView(
+              'homeView',
+              document.querySelectorAll('.nav-tab')[0]
+            )
+          "
+        >
+          <i class="ph-bold ph-arrow-left"></i>
+        </button>
+
+
+        <div class="title-group">
+
+          <h3 id="trackBusTitle">
+            BUS 1
+          </h3>
+
+          <p>
+            Real-Time Navigation
+          </p>
+
+        </div>
+
+
+        <button
+          class="icon-btn"
+          onclick="openModal('supportModal')"
+        >
+          <i class="ph-bold ph-phone"></i>
+        </button>
+
       </div>
-      <button class="icon-btn" onclick="openModal('supportModal')"><i class="ph-bold ph-phone"></i></button>
+
     </div>
 
-    <!-- Clean Bus Bar -->
+
+    <!-- BUS STATUS -->
+
     <div class="clean-bus-bar">
+
       <div class="clean-bus-title">
-        <i class="ph-bold ph-bus" style="color: var(--primary); font-size: 20px;"></i>
-        <span id="cleanBusId">BUS 1</span>
-        <span class="status-badge status-off" id="cleanStatus">OFFLINE</span>
+
+        <i
+          class="ph-fill ph-bus"
+          style="
+            color:var(--primary);
+            font-size:20px;
+          "
+        ></i>
+
+        <span id="cleanBusId">
+          BUS 1
+        </span>
+
+        <span
+          class="status-badge status-off"
+          id="cleanStatus"
+        >
+          <span class="status-dot"></span>
+          OFFLINE
+        </span>
+
       </div>
+
+
       <div class="clean-bus-actions">
-        <button class="icon-map-launch" title="Open Native Maps" onclick="openInNativeMaps()">
+
+        <button
+          class="icon-map-launch"
+          title="Open Native Maps"
+          onclick="openInNativeMaps()"
+        >
           <i class="ph-bold ph-arrow-square-out"></i>
         </button>
+
       </div>
+
     </div>
 
-    <!-- Official Google Map Container -->
+
+    <!-- MAP -->
+
     <div id="trackingMap"></div>
 
-    <!-- Where Is My Train Style Bottom Sheet -->
-    <div class="collapsible-sheet" id="routeSheet">
-      <div class="sheet-handle-bar" onclick="toggleRouteSheet()">
+
+    <!-- ROUTE SHEET -->
+
+    <div
+      class="collapsible-sheet"
+      id="routeSheet"
+    >
+
+      <div
+        class="sheet-handle-bar"
+        onclick="toggleRouteSheet()"
+      >
+
         <div class="sheet-drag-pill"></div>
+
+
         <div class="sheet-header-summary">
+
           <div>
-            <span style="font-size: 11px; color: var(--text-muted);">Current Stop</span>
-            <h4 style="font-size: 14px; color: var(--text);" id="sheetCurrentStop">BARASIROHI</h4>
+
+            <span class="sheet-label">
+              Current Stop
+            </span>
+
+            <h4
+              class="sheet-value"
+              id="sheetCurrentStop"
+            >
+              BARASIROHI
+            </h4>
+
           </div>
-          <div style="text-align: right; display: flex; align-items: center; gap: 8px;">
-            <div>
-              <span style="font-size: 11px; color: var(--text-muted);">Scheduled</span>
-              <h4 style="font-size: 14px; color: var(--primary);" id="sheetEta">06:30 AM</h4>
+
+
+          <div class="sheet-right">
+
+            <div style="text-align:right;">
+
+              <span class="sheet-label">
+                Scheduled
+              </span>
+
+              <h4
+                class="sheet-value"
+                id="sheetEta"
+                style="color:var(--primary);"
+              >
+                —
+              </h4>
+
             </div>
-            <i class="ph-bold ph-caret-up" id="sheetToggleIcon" style="font-size: 18px; color: var(--text-muted); transition: 0.2s;"></i>
+
+            <i
+              class="ph-bold ph-caret-up"
+              id="sheetToggleIcon"
+              style="
+                font-size:18px;
+                color:var(--text-muted);
+                transition:0.2s;
+              "
+            ></i>
+
           </div>
+
         </div>
+
       </div>
+
 
       <div class="sheet-body">
-        <div class="train-timeline" id="trainTimelineBox"></div>
+
+        <div
+          class="train-timeline"
+          id="trainTimelineBox"
+        ></div>
+
       </div>
+
     </div>
+
   </div>
 
-  <!-- NOTIFICATIONS VIEW -->
-  <div class="view" id="notifView">
+
+  <!-- =======================================================
+       NOTIFICATIONS VIEW
+  ======================================================== -->
+
+  <div
+    class="view"
+    id="notifView"
+  >
+
     <div class="top-bar">
-      <button class="icon-btn" onclick="switchView('homeView', document.querySelectorAll('.nav-tab')[0])"><i class="ph-bold ph-arrow-left"></i></button>
+
+      <button
+        class="icon-btn"
+        onclick="
+          switchView(
+            'homeView',
+            document.querySelectorAll('.nav-tab')[0]
+          )
+        "
+      >
+        <i class="ph-bold ph-arrow-left"></i>
+      </button>
+
+
       <div class="title-group">
-        <h3>Bus Delay Alerts</h3>
+
+        <h3>
+          Transport Alerts
+        </h3>
+
+        <p>
+          Bus updates & announcements
+        </p>
+
       </div>
-      <div style="width: 22px;"></div>
+
+
+      <div style="width:38px;"></div>
+
     </div>
+
+
     <div class="content-body">
-      <div id="notifList">
-        <div class="announce-card">
-          <h5>No Active Delays</h5>
-          <p>Everything is running as per scheduled timings.</p>
+
+      <div
+        id="notifList"
+      >
+
+        <div class="alert-empty">
+
+          <div class="alert-empty-icon">
+            <i class="ph-bold ph-check"></i>
+          </div>
+
+          <h3>
+            No Active Alerts
+          </h3>
+
+          <p>
+            Everything is running according to the
+            latest available transport information.
+          </p>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
 
-  <!-- BOTTOM NAV -->
+
+  <!-- =======================================================
+       BOTTOM NAVIGATION
+  ======================================================== -->
+
   <nav class="bottom-nav">
-    <button class="nav-tab active" onclick="switchView('homeView', this)"><i class="ph-bold ph-house"></i><span>Home</span></button>
-    <button class="nav-tab" onclick="switchView('mapView', this)"><i class="ph-bold ph-navigation-arrow"></i><span>Live Map</span></button>
-    <button class="nav-tab" onclick="switchView('notifView', this)"><i class="ph-bold ph-bell"></i><span>Alerts</span></button>
+
+    <button
+      class="nav-tab active"
+      onclick="
+        switchView('homeView', this)
+      "
+    >
+
+      <i class="ph-bold ph-house"></i>
+
+      <span>
+        Home
+      </span>
+
+    </button>
+
+
+    <button
+      class="nav-tab"
+      onclick="
+        switchView('mapView', this)
+      "
+    >
+
+      <i class="ph-bold ph-navigation-arrow"></i>
+
+      <span>
+        Live Map
+      </span>
+
+    </button>
+
+
+    <button
+      class="nav-tab"
+      onclick="
+        switchView('notifView', this)
+      "
+    >
+
+      <i class="ph-bold ph-bell"></i>
+
+      <span>
+        Alerts
+      </span>
+
+    </button>
+
   </nav>
 
+
 </div>
 
-<!-- SUPPORT MODAL -->
-<div class="app-modal" id="supportModal">
+
+<!-- =========================================================
+     SUPPORT MODAL
+========================================================= -->
+
+<div
+  class="app-modal"
+  id="supportModal"
+>
+
   <div class="app-modal-card">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-      <h4 style="font-size: 16px; font-weight: 700;"><i class="ph-bold ph-headset" style="color: var(--primary);"></i> Transport Helpline</h4>
-      <button class="icon-btn" onclick="closeModal('supportModal')"><i class="ph-bold ph-x"></i></button>
-    </div>
-    <div class="contact-item">
-      <div>
-        <h5 style="font-size: 14px; font-weight: 700;">Kishan Sir</h5>
-        <p style="font-size: 11px; color: var(--text-muted);">Transport Manager</p>
+
+    <div class="modal-header">
+
+      <div class="modal-title">
+
+        <i class="ph-bold ph-headset"></i>
+
+        <span>
+          Transport Support
+        </span>
+
       </div>
-      <a href="tel:+911234567890" class="btn-action-call"><i class="ph-bold ph-phone"></i> Call</a>
+
+
+      <button
+        class="icon-btn"
+        onclick="closeModal('supportModal')"
+      >
+        <i class="ph-bold ph-x"></i>
+      </button>
+
     </div>
+
+
+    <div class="contact-item">
+
+      <div>
+
+        <h5>
+          Transport Manager
+        </h5>
+
+        <p>
+          College Transport Support
+        </p>
+
+      </div>
+
+
+      <!-- Replace number with official college number later -->
+
+      <a
+        href="tel:+911234567890"
+        class="btn-action-call"
+      >
+
+        <i class="ph-bold ph-phone"></i>
+
+        Call
+
+      </a>
+
+    </div>
+
+
+    <p
+      style="
+        margin-top:12px;
+        font-size:10px;
+        color:var(--text-muted);
+        line-height:1.5;
+      "
+    >
+      Contact details can be updated later with
+      the official Axis Colleges transport number.
+    </p>
+
   </div>
+
 </div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
 
 <script type="module">
-  import { db, ref, onValue } from "./firebase-config.js";
-  import { AXIS_BUS_ROUTES } from "./bus-routes.js";
 
-  const session = JSON.parse(localStorage.getItem("campusride_user") || "null");
-  if (!session || session.role !== "student") {
+  /* =========================================================
+     IMPORTS
+  ========================================================= */
+
+  import {
+    db,
+    ref,
+    onValue
+  } from "./firebase-config.js";
+
+  import {
+    AXIS_BUS_ROUTES
+  } from "./bus-routes.js";
+
+
+  /* =========================================================
+     SESSION
+  ========================================================= */
+
+  const session =
+    JSON.parse(
+      localStorage.getItem("campusride_user") || "null"
+    );
+
+
+  if (
+    !session ||
+    session.role !== "student"
+  ) {
+
     window.location.href = "login.html";
+
+    throw new Error(
+      "Student session not found."
+    );
   }
 
+
+  /* =========================================================
+     LOGOUT
+  ========================================================= */
+
   window.logout = function () {
-    localStorage.removeItem("campusride_user");
-    window.location.href = "login.html";
+
+    localStorage.removeItem(
+      "campusride_user"
+    );
+
+    window.location.href =
+      "login.html";
   };
 
-  const assignedBus = session.busId || "BUS 1";
-  document.getElementById("heroName").innerText =
+
+  /* =========================================================
+     BASIC USER INFORMATION
+  ========================================================= */
+
+  const assignedBus =
+    session.busId || "BUS 1";
+
+
+  document.getElementById(
+    "heroName"
+  ).innerText =
     `Welcome, ${session.name || session.id} 👋`;
-  document.getElementById("heroRoute").innerText =
-    `Assigned Bus: ${assignedBus}`;
+
+
+  document.getElementById(
+    "heroRoute"
+  ).innerText =
+    `Your assigned bus: ${assignedBus}`;
+
+
+  document.getElementById(
+    "myBusId"
+  ).innerText =
+    assignedBus;
+
+
+  /* =========================================================
+     BUS FEE
+     
+     IMPORTANT:
+     Actual fee amount was not provided yet.
+     Change ONLY this line when official amount is known.
+  ========================================================= */
+
+  const BUS_FEE_TEXT = "₹ —";
+
+
+  document.getElementById(
+    "busFeeAmount"
+  ).innerText =
+    BUS_FEE_TEXT;
+
+
+  /* =========================================================
+     CURRENT ROUTE DATA
+  ========================================================= */
+
+  const assignedRoute =
+    AXIS_BUS_ROUTES[assignedBus];
+
+
+  if (assignedRoute) {
+
+    document.getElementById(
+      "myBusRoute"
+    ).innerText =
+      assignedRoute.routeName;
+
+
+    const firstStop =
+      assignedRoute.stops &&
+      assignedRoute.stops.length
+        ? assignedRoute.stops[0].name
+        : "Route available";
+
+
+    const lastStop =
+      assignedRoute.stops &&
+      assignedRoute.stops.length
+        ? assignedRoute.stops[
+            assignedRoute.stops.length - 1
+          ].name
+        : "Axis";
+
+
+    document.getElementById(
+      "myBusRouteDetail"
+    ).innerText =
+      `${firstStop} → ${lastStop}`;
+  }
+
+
+  /* =========================================================
+     MAP VARIABLES
+  ========================================================= */
 
   let gMap = null;
+
   let gBusMarker = null;
+
   let gRoutePath = null;
+
   let gStopMarkers = [];
-  let activeSelectedBus = assignedBus;
+
+  let activeSelectedBus =
+    assignedBus;
+
   let activeBusLat = null;
+
   let activeBusLng = null;
+
   let currentStopIndex = 0;
+
   let latestBusesData = {};
 
-  window.toggleRouteSheet = function () {
-    const sheet = document.getElementById("routeSheet");
-    const icon = document.getElementById("sheetToggleIcon");
-    sheet.classList.toggle("collapsed");
-    icon.style.transform =
-      sheet.classList.contains("collapsed") ? "rotate(180deg)" : "rotate(0deg)";
-  };
+
+  /* =========================================================
+     MAP SHEET
+  ========================================================= */
+
+  window.toggleRouteSheet =
+    function () {
+
+      const sheet =
+        document.getElementById(
+          "routeSheet"
+        );
+
+      const icon =
+        document.getElementById(
+          "sheetToggleIcon"
+        );
+
+
+      sheet.classList.toggle(
+        "collapsed"
+      );
+
+
+      icon.style.transform =
+        sheet.classList.contains(
+          "collapsed"
+        )
+          ? "rotate(180deg)"
+          : "rotate(0deg)";
+    };
+
+
+  /* =========================================================
+     INITIALIZE GOOGLE MAP
+     
+     MAP WILL BE REDESIGNED LATER.
+  ========================================================= */
 
   function initGoogleMap() {
+
     if (gMap) {
-      google.maps.event.trigger(gMap, "resize");
-      renderGoogleRoute(activeSelectedBus);
+
+      if (
+        window.google &&
+        google.maps
+      ) {
+
+        google.maps.event.trigger(
+          gMap,
+          "resize"
+        );
+
+      }
+
+      renderGoogleRoute(
+        activeSelectedBus
+      );
+
       renderActiveBusLocation();
+
       return;
     }
 
-    const mapElement = document.getElementById("trackingMap");
 
-    if (typeof google === "undefined" || !google.maps || !mapElement) {
-      console.error("Google Maps SDK is not available.");
+    const mapElement =
+      document.getElementById(
+        "trackingMap"
+      );
+
+
+    if (
+      typeof google === "undefined" ||
+      !google.maps ||
+      !mapElement
+    ) {
+
+      console.error(
+        "Google Maps SDK is not available."
+      );
+
       return;
     }
 
-    gMap = new google.maps.Map(mapElement, {
-      center: { lat: 26.4499, lng: 80.3319 },
-      zoom: 13,
-      mapTypeId: "roadmap",
-      disableDefaultUI: true,
-      zoomControl: true
-    });
 
-    renderGoogleRoute(activeSelectedBus);
+    gMap =
+      new google.maps.Map(
+        mapElement,
+        {
+          center: {
+            lat: 26.4499,
+            lng: 80.3319
+          },
+
+          zoom: 13,
+
+          mapTypeId: "roadmap",
+
+          disableDefaultUI: true,
+
+          zoomControl: true
+        }
+      );
+
+
+    renderGoogleRoute(
+      activeSelectedBus
+    );
+
     renderActiveBusLocation();
   }
 
-  function renderGoogleRoute(busId) {
-    activeSelectedBus = busId;
 
-    const rData = AXIS_BUS_ROUTES[busId];
-    if (!rData || !gMap) return;
+  /* =========================================================
+     DRAW ROUTE
+  ========================================================= */
 
-    document.getElementById("trackBusTitle").innerText = busId;
-    document.getElementById("cleanBusId").innerText = busId;
+  function renderGoogleRoute(
+    busId
+  ) {
 
-    if (gRoutePath) gRoutePath.setMap(null);
-    gStopMarkers.forEach(marker => marker.setMap(null));
+    activeSelectedBus =
+      busId;
+
+
+    const rData =
+      AXIS_BUS_ROUTES[busId];
+
+
+    if (
+      !rData ||
+      !gMap
+    ) {
+
+      return;
+    }
+
+
+    document.getElementById(
+      "trackBusTitle"
+    ).innerText =
+      busId;
+
+
+    document.getElementById(
+      "cleanBusId"
+    ).innerText =
+      busId;
+
+
+    if (gRoutePath) {
+
+      gRoutePath.setMap(
+        null
+      );
+    }
+
+
+    gStopMarkers.forEach(
+      marker =>
+        marker.setMap(null)
+    );
+
+
     gStopMarkers = [];
 
-    const pathCoordinates = rData.stops.map(s => ({
-      lat: Number(s.lat),
-      lng: Number(s.lng)
-    }));
 
-    gRoutePath = new google.maps.Polyline({
-      path: pathCoordinates,
-      geodesic: true,
-      strokeColor: rData.color || "#2563eb",
-      strokeOpacity: 0.85,
-      strokeWeight: 5,
-      map: gMap
-    });
+    const pathCoordinates =
+      rData.stops.map(
+        stop => ({
+          lat: Number(stop.lat),
+          lng: Number(stop.lng)
+        })
+      );
 
-    const bounds = new google.maps.LatLngBounds();
 
-    rData.stops.forEach((stop, idx) => {
-      const pos = {
-        lat: Number(stop.lat),
-        lng: Number(stop.lng)
-      };
+    gRoutePath =
+      new google.maps.Polyline({
 
-      bounds.extend(pos);
+        path:
+          pathCoordinates,
 
-      const stopDot = new google.maps.Marker({
-        position: pos,
-        map: gMap,
-        title: stop.name,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: idx === 0 || idx === rData.stops.length - 1 ? 6 : 4,
-          fillColor: "#ffffff",
-          fillOpacity: 1,
-          strokeColor: rData.color || "#2563eb",
-          strokeWeight: 2
-        }
+        geodesic:
+          true,
+
+        strokeColor:
+          rData.color ||
+          "#2563eb",
+
+        strokeOpacity:
+          0.85,
+
+        strokeWeight:
+          5,
+
+        map:
+          gMap
+
       });
 
-      gStopMarkers.push(stopDot);
-    });
 
-    gMap.fitBounds(bounds);
-    updateTrainTimeline(currentStopIndex);
+    const bounds =
+      new google.maps.LatLngBounds();
+
+
+    rData.stops.forEach(
+      (stop, idx) => {
+
+        const pos = {
+          lat: Number(stop.lat),
+          lng: Number(stop.lng)
+        };
+
+
+        bounds.extend(pos);
+
+
+        const stopDot =
+          new google.maps.Marker({
+
+            position:
+              pos,
+
+            map:
+              gMap,
+
+            title:
+              stop.name,
+
+            icon: {
+
+              path:
+                google.maps.SymbolPath.CIRCLE,
+
+              scale:
+                idx === 0 ||
+                idx ===
+                  rData.stops.length - 1
+                  ? 6
+                  : 4,
+
+              fillColor:
+                "#ffffff",
+
+              fillOpacity:
+                1,
+
+              strokeColor:
+                rData.color ||
+                "#2563eb",
+
+              strokeWeight:
+                2
+
+            }
+
+          });
+
+
+        gStopMarkers.push(
+          stopDot
+        );
+
+      }
+    );
+
+
+    if (
+      !bounds.isEmpty()
+    ) {
+
+      gMap.fitBounds(
+        bounds
+      );
+
+    }
+
+
+    updateTrainTimeline(
+      currentStopIndex
+    );
   }
+
+
+  /* =========================================================
+     LIVE BUS LOCATION
+  ========================================================= */
 
   function renderActiveBusLocation() {
-    const bus = latestBusesData[activeSelectedBus];
 
-    if (!bus || bus.isActive !== true) {
-      document.getElementById("cleanStatus").className =
-        "status-badge status-off";
-      document.getElementById("cleanStatus").innerText = "OFFLINE";
+    const bus =
+      latestBusesData[
+        activeSelectedBus
+      ];
+
+
+    if (
+      !bus ||
+      bus.isActive !== true
+    ) {
+
+      setBusOfflineUI();
+
 
       if (gBusMarker) {
-        gBusMarker.setMap(null);
-        gBusMarker = null;
+
+        gBusMarker.setMap(
+          null
+        );
+
+        gBusMarker =
+          null;
       }
 
+
       return;
     }
 
-    const lat = Number(bus.latitude);
-    const lng = Number(bus.longitude);
 
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      console.error("Invalid Firebase coordinates:", bus);
+    const lat =
+      Number(bus.latitude);
+
+    const lng =
+      Number(bus.longitude);
+
+
+    if (
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lng)
+    ) {
+
+      console.error(
+        "Invalid Firebase coordinates:",
+        bus
+      );
+
+      setBusOfflineUI();
+
       return;
     }
 
-    activeBusLat = lat;
-    activeBusLng = lng;
 
-    document.getElementById("cleanStatus").className =
-      "status-badge status-live";
-    document.getElementById("cleanStatus").innerText = "LIVE";
+    activeBusLat =
+      lat;
 
-    if (!gMap) return;
+    activeBusLng =
+      lng;
 
-    const pos = new google.maps.LatLng(lat, lng);
+
+    setBusLiveUI(
+      bus
+    );
+
+
+    if (!gMap) {
+
+      return;
+    }
+
+
+    const pos =
+      new google.maps.LatLng(
+        lat,
+        lng
+      );
+
 
     if (gBusMarker) {
-      gBusMarker.setPosition(pos);
+
+      gBusMarker.setPosition(
+        pos
+      );
+
     } else {
-      gBusMarker = new google.maps.Marker({
-        position: pos,
-        map: gMap,
-        title: activeSelectedBus,
-        icon: {
-          url: "https://maps.google.com/mapfiles/kml/shapes/bus.png",
-          scaledSize: new google.maps.Size(38, 38),
-          anchor: new google.maps.Point(19, 19)
-        }
-      });
+
+      gBusMarker =
+        new google.maps.Marker({
+
+          position:
+            pos,
+
+          map:
+            gMap,
+
+          title:
+            activeSelectedBus,
+
+          icon: {
+
+            url:
+              "https://maps.google.com/mapfiles/kml/shapes/bus.png",
+
+            scaledSize:
+              new google.maps.Size(
+                38,
+                38
+              ),
+
+            anchor:
+              new google.maps.Point(
+                19,
+                19
+              )
+
+          }
+
+        });
+
     }
 
-    gMap.panTo(pos);
 
-    const nearest = calculateNearestStop(lat, lng);
-    updateTrainTimeline(nearest);
+    gMap.panTo(
+      pos
+    );
+
+
+    const nearest =
+      calculateNearestStop(
+        lat,
+        lng
+      );
+
+
+    updateTrainTimeline(
+      nearest
+    );
+
+
+    updateQuickLocation(
+      nearest
+    );
+
+
+    updateLastUpdate(
+      bus
+    );
   }
 
-  function updateTrainTimeline(closestIdx) {
-    currentStopIndex = closestIdx;
 
-    const rData = AXIS_BUS_ROUTES[activeSelectedBus];
-    if (!rData) return;
+  /* =========================================================
+     LIVE/OFFLINE UI
+  ========================================================= */
 
-    const curStop = rData.stops[closestIdx] || rData.stops[0];
-    document.getElementById("sheetCurrentStop").innerText = curStop.name;
-    document.getElementById("sheetEta").innerText = curStop.time;
+  function setBusLiveUI(
+    bus
+  ) {
 
-    const tBox = document.getElementById("trainTimelineBox");
+    const status =
+      document.getElementById(
+        "myBusStatus"
+      );
 
-    tBox.innerHTML = rData.stops.map((stop, idx) => {
-      let stateClass = "";
-      let busBadge = "";
 
-      if (idx < closestIdx) {
-        stateClass = "passed";
-      } else if (idx === closestIdx) {
-        stateClass = "current";
-        busBadge =
-          `<span class="train-bus-badge"><i class="ph-bold ph-bus"></i> Bus Here</span>`;
-      }
+    status.className =
+      "status-badge status-live";
 
-      return `
-        <div class="train-stop ${stateClass}">
-          <div>
-            <span>${stop.name}</span>
-            ${busBadge}
-          </div>
-          <span style="font-size: 11px; color: var(--text-muted);">
-            ${stop.time}
-          </span>
-        </div>
+
+    status.innerHTML =
+      `
+        <span class="status-dot"></span>
+        LIVE
       `;
-    }).join("");
+
+
+    document.getElementById(
+      "cleanStatus"
+    ).className =
+      "status-badge status-live";
+
+
+    document.getElementById(
+      "cleanStatus"
+    ).innerHTML =
+      `
+        <span class="status-dot"></span>
+        LIVE
+      `;
+
+
+    document.getElementById(
+      "quickBusStatus"
+    ).innerText =
+      "LIVE";
+
+
+    document.getElementById(
+      "quickRouteStatus"
+    ).innerText =
+      "On Route";
+
+
+    document.getElementById(
+      "heroLiveBadge"
+    ).innerHTML =
+      `
+        <span class="live-dot"></span>
+        Bus is live
+      `;
+
   }
 
-  function calculateNearestStop(busLat, busLng) {
-    const rData = AXIS_BUS_ROUTES[activeSelectedBus];
-    if (!rData) return 0;
 
-    let minDistance = Infinity;
-    let nearestIdx = 0;
+  function setBusOfflineUI() {
 
-    rData.stops.forEach((stop, idx) => {
-      const lat = Number(stop.lat);
-      const lng = Number(stop.lng);
+    const status =
+      document.getElementById(
+        "myBusStatus"
+      );
 
-      const dLat = (lat - busLat) * 111320;
-      const dLng =
-        (lng - busLng) *
-        111320 *
-        Math.cos((busLat * Math.PI) / 180);
 
-      const distance = Math.hypot(dLat, dLng);
+    status.className =
+      "status-badge status-off";
 
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearestIdx = idx;
+
+    status.innerHTML =
+      `
+        <span class="status-dot"></span>
+        OFFLINE
+      `;
+
+
+    document.getElementById(
+      "cleanStatus"
+    ).className =
+      "status-badge status-off";
+
+
+    document.getElementById(
+      "cleanStatus"
+    ).innerHTML =
+      `
+        <span class="status-dot"></span>
+        OFFLINE
+      `;
+
+
+    document.getElementById(
+      "quickBusStatus"
+    ).innerText =
+      "Offline";
+
+
+    document.getElementById(
+      "quickRouteStatus"
+    ).innerText =
+      "Waiting";
+
+
+    document.getElementById(
+      "quickUpdate"
+    ).innerText =
+      "—";
+
+
+    document.getElementById(
+      "quickStop"
+    ).innerText =
+      "—";
+
+
+    document.getElementById(
+      "heroLiveBadge"
+    ).innerHTML =
+      `
+        <span
+          class="live-dot"
+          style="
+            background:#94a3b8;
+            box-shadow:none;
+          "
+        ></span>
+        Waiting for live bus
+      `;
+
+  }
+
+
+  /* =========================================================
+     LAST UPDATE
+  ========================================================= */
+
+  function updateLastUpdate(
+    bus
+  ) {
+
+    let timeText =
+      "Now";
+
+
+    if (bus.updatedAt) {
+
+      const d =
+        new Date(
+          bus.updatedAt
+        );
+
+
+      if (
+        !Number.isNaN(
+          d.getTime()
+        )
+      ) {
+
+        timeText =
+          d.toLocaleTimeString(
+            [],
+            {
+              hour:
+                "2-digit",
+
+              minute:
+                "2-digit"
+            }
+          );
+
       }
-    });
+
+    }
+
+
+    document.getElementById(
+      "quickUpdate"
+    ).innerText =
+      timeText;
+  }
+
+
+  /* =========================================================
+     TIMELINE
+  ========================================================= */
+
+  function updateTrainTimeline(
+    closestIdx
+  ) {
+
+    currentStopIndex =
+      closestIdx;
+
+
+    const rData =
+      AXIS_BUS_ROUTES[
+        activeSelectedBus
+      ];
+
+
+    if (!rData) {
+
+      return;
+    }
+
+
+    const curStop =
+      rData.stops[
+        closestIdx
+      ] ||
+      rData.stops[0];
+
+
+    if (curStop) {
+
+      document.getElementById(
+        "sheetCurrentStop"
+      ).innerText =
+        curStop.name;
+
+
+      document.getElementById(
+        "sheetEta"
+      ).innerText =
+        curStop.time;
+
+
+      document.getElementById(
+        "quickStop"
+      ).innerText =
+        curStop.name;
+    }
+
+
+    const tBox =
+      document.getElementById(
+        "trainTimelineBox"
+      );
+
+
+    tBox.innerHTML =
+      rData.stops.map(
+        (stop, idx) => {
+
+          let stateClass =
+            "";
+
+          let busBadge =
+            "";
+
+
+          if (
+            idx < closestIdx
+          ) {
+
+            stateClass =
+              "passed";
+
+          } else if (
+            idx === closestIdx
+          ) {
+
+            stateClass =
+              "current";
+
+
+            busBadge =
+              `
+                <span
+                  class="train-bus-badge"
+                >
+                  <i class="ph-bold ph-bus"></i>
+                  Bus Here
+                </span>
+              `;
+
+          }
+
+
+          return `
+            <div
+              class="train-stop ${stateClass}"
+            >
+
+              <div>
+
+                <span>
+                  ${stop.name}
+                </span>
+
+                ${busBadge}
+
+              </div>
+
+              <span
+                style="
+                  font-size:10px;
+                  color:var(--text-muted);
+                "
+              >
+                ${stop.time}
+              </span>
+
+            </div>
+          `;
+
+        }
+      ).join("");
+  }
+
+
+  /* =========================================================
+     NEAREST STOP
+  ========================================================= */
+
+  function calculateNearestStop(
+    busLat,
+    busLng
+  ) {
+
+    const rData =
+      AXIS_BUS_ROUTES[
+        activeSelectedBus
+      ];
+
+
+    if (!rData) {
+
+      return 0;
+    }
+
+
+    let minDistance =
+      Infinity;
+
+    let nearestIdx =
+      0;
+
+
+    rData.stops.forEach(
+      (stop, idx) => {
+
+        const lat =
+          Number(stop.lat);
+
+        const lng =
+          Number(stop.lng);
+
+
+        const dLat =
+          (lat - busLat) *
+          111320;
+
+
+        const dLng =
+          (lng - busLng) *
+          111320 *
+          Math.cos(
+            (busLat * Math.PI) /
+            180
+          );
+
+
+        const distance =
+          Math.hypot(
+            dLat,
+            dLng
+          );
+
+
+        if (
+          distance <
+          minDistance
+        ) {
+
+          minDistance =
+            distance;
+
+          nearestIdx =
+            idx;
+        }
+
+      }
+    );
+
 
     return nearestIdx;
   }
 
-  window.openInNativeMaps = function () {
+
+  function updateQuickLocation(
+    nearestIdx
+  ) {
+
+    const rData =
+      AXIS_BUS_ROUTES[
+        activeSelectedBus
+      ];
+
+
     if (
-      !Number.isFinite(activeBusLat) ||
-      !Number.isFinite(activeBusLng)
+      !rData ||
+      !rData.stops[
+        nearestIdx
+      ]
     ) {
-      alert("Live bus location is not available yet.");
+
       return;
     }
 
-    const isApple = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent);
 
-    if (isApple) {
-      window.open(
-        `maps://maps.apple.com/?q=${activeSelectedBus}+Live&ll=${activeBusLat},${activeBusLng}&z=16`,
-        "_blank"
+    document.getElementById(
+      "quickStop"
+    ).innerText =
+      rData.stops[
+        nearestIdx
+      ].name;
+  }
+
+
+  /* =========================================================
+     NATIVE MAPS
+  ========================================================= */
+
+  window.openInNativeMaps =
+    function () {
+
+      if (
+        !Number.isFinite(
+          activeBusLat
+        ) ||
+        !Number.isFinite(
+          activeBusLng
+        )
+      ) {
+
+        alert(
+          "Live bus location is not available yet."
+        );
+
+        return;
+      }
+
+
+      const isApple =
+        /iPhone|iPad|iPod|Macintosh/i
+          .test(
+            navigator.userAgent
+          );
+
+
+      if (isApple) {
+
+        window.open(
+          `maps://maps.apple.com/?q=${activeSelectedBus}+Live&ll=${activeBusLat},${activeBusLng}&z=16`,
+          "_blank"
+        );
+
+      } else {
+
+        window.open(
+          `https://www.google.com/maps/search/?api=1&query=${activeBusLat},${activeBusLng}`,
+          "_blank"
+        );
+
+      }
+
+    };
+
+
+  /* =========================================================
+     SWITCH VIEW
+  ========================================================= */
+
+  window.switchView =
+    function (
+      viewId,
+      tabEl
+    ) {
+
+      document
+        .querySelectorAll(".view")
+        .forEach(
+          view =>
+            view.classList.remove(
+              "active"
+            )
+        );
+
+
+      const target =
+        document.getElementById(
+          viewId
+        );
+
+
+      if (!target) {
+
+        return;
+      }
+
+
+      target.classList.add(
+        "active"
       );
-    } else {
-      window.open(
-        `https://www.google.com/maps/search/?api=1&query=${activeBusLat},${activeBusLng}`,
-        "_blank"
-      );
-    }
-  };
 
-  window.switchView = function (viewId, tabEl) {
-    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-    document.getElementById(viewId).classList.add("active");
 
-    if (tabEl) {
-      document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
-      tabEl.classList.add("active");
-    }
+      if (tabEl) {
 
-    if (viewId === "mapView") {
-      setTimeout(() => {
-        initGoogleMap();
-        renderGoogleRoute(activeSelectedBus);
-        renderActiveBusLocation();
-      }, 150);
-    }
-  };
+        document
+          .querySelectorAll(
+            ".nav-tab"
+          )
+          .forEach(
+            tab =>
+              tab.classList.remove(
+                "active"
+              )
+          );
 
-  window.toggleDrawer = open =>
-    document.getElementById("drawerOverlay").classList.toggle("open", open);
 
-  window.openModal = id =>
-    document.getElementById(id).classList.add("active");
+        tabEl.classList.add(
+          "active"
+        );
 
-  window.closeModal = id =>
-    document.getElementById(id).classList.remove("active");
+      }
 
-  const busListContainer = document.getElementById("busCardsList");
-  const busKeys = Object.keys(AXIS_BUS_ROUTES);
+
+      if (
+        viewId ===
+        "mapView"
+      ) {
+
+        setTimeout(
+          () => {
+
+            initGoogleMap();
+
+            renderGoogleRoute(
+              activeSelectedBus
+            );
+
+            renderActiveBusLocation();
+
+          },
+          150
+        );
+
+      }
+
+    };
+
+
+  /* =========================================================
+     DRAWER
+  ========================================================= */
+
+  window.toggleDrawer =
+    function (
+      open
+    ) {
+
+      document
+        .getElementById(
+          "drawerOverlay"
+        )
+        .classList.toggle(
+          "open",
+          open
+        );
+
+    };
+
+
+  /* =========================================================
+     MODALS
+  ========================================================= */
+
+  window.openModal =
+    function (
+      id
+    ) {
+
+      const modal =
+        document.getElementById(
+          id
+        );
+
+
+      if (modal) {
+
+        modal.classList.add(
+          "active"
+        );
+
+      }
+
+    };
+
+
+  window.closeModal =
+    function (
+      id
+    ) {
+
+      const modal =
+        document.getElementById(
+          id
+        );
+
+
+      if (modal) {
+
+        modal.classList.remove(
+          "active"
+        );
+
+      }
+
+    };
+
+
+  /* =========================================================
+     BUS FLEET
+  ========================================================= */
+
+  const busListContainer =
+    document.getElementById(
+      "busCardsList"
+    );
+
+
+  const busKeys =
+    Object.keys(
+      AXIS_BUS_ROUTES
+    );
+
 
   function renderFleetCards() {
-    busListContainer.innerHTML = busKeys.map(bId => {
-      const r = AXIS_BUS_ROUTES[bId];
-      const safeId = bId.replace(/\s+/g, "_");
 
-      return `
-        <div class="bus-card" onclick="selectAndTrackBus('${bId}')">
-          <div class="bus-icon-wrap off" id="icon_${safeId}">
-            <i class="ph-bold ph-bus"></i>
-          </div>
-          <div class="bus-info">
-            <div class="bus-info-top">
-              <span class="bus-id">${bId}</span>
-              <span class="status-badge status-off" id="pill_${safeId}">OFFLINE</span>
+    if (
+      !busListContainer
+    ) {
+
+      return;
+    }
+
+
+    busListContainer.innerHTML =
+      busKeys.map(
+        bId => {
+
+          const r =
+            AXIS_BUS_ROUTES[
+              bId
+            ];
+
+
+          const safeId =
+            bId.replace(
+              /\s+/g,
+              "_"
+            );
+
+
+          const isMyBus =
+            bId === assignedBus;
+
+
+          return `
+            <div
+              class="bus-card"
+              onclick="
+                selectAndTrackBus('${bId}')
+              "
+              style="
+                ${
+                  isMyBus
+                    ? "border-color:#bfdbfe;"
+                    : ""
+                }
+              "
+            >
+
+              <div
+                class="
+                  bus-icon-wrap
+                  off
+                "
+                id="icon_${safeId}"
+              >
+                <i
+                  class="ph-fill ph-bus"
+                ></i>
+              </div>
+
+
+              <div
+                class="bus-info"
+              >
+
+                <div
+                  class="bus-info-top"
+                >
+
+                  <span
+                    class="bus-id"
+                  >
+                    ${bId}
+                    ${
+                      isMyBus
+                        ? `
+                          <span
+                            style="
+                              color:var(--primary);
+                              font-size:8px;
+                              margin-left:4px;
+                            "
+                          >
+                            MY BUS
+                          </span>
+                        `
+                        : ""
+                    }
+                  </span>
+
+
+                  <span
+                    class="
+                      status-badge
+                      status-off
+                    "
+                    id="
+                      pill_${safeId}
+                    "
+                  >
+                    <span
+                      class="status-dot"
+                    ></span>
+                    OFFLINE
+                  </span>
+
+                </div>
+
+
+                <div
+                  class="bus-route"
+                >
+                  ${r.routeName}
+                </div>
+
+              </div>
+
+
+              <i
+                class="
+                  ph-bold
+                  ph-caret-right
+                "
+                style="
+                  color:#94a3b8;
+                "
+              ></i>
+
             </div>
-            <div class="bus-route">${r.routeName}</div>
-          </div>
-          <i class="ph-bold ph-caret-right" style="color: var(--text-muted);"></i>
-        </div>
-      `;
-    }).join("");
+          `;
+
+        }
+      ).join("");
+
   }
+
 
   renderFleetCards();
 
-  window.selectAndTrackBus = function (bId) {
-    activeSelectedBus = bId;
-    switchView("mapView", document.querySelectorAll(".nav-tab")[1]);
-  };
 
-  onValue(ref(db, "buses"), snapshot => {
-    latestBusesData = snapshot.val() || {};
+  /* =========================================================
+     SELECT BUS
+  ========================================================= */
 
-    busKeys.forEach(bId => {
-      const bus = latestBusesData[bId];
-      const safeId = bId.replace(/\s+/g, "_");
+  window.selectAndTrackBus =
+    function (
+      bId
+    ) {
 
-      const pill = document.getElementById(`pill_${safeId}`);
-      const icon = document.getElementById(`icon_${safeId}`);
+      activeSelectedBus =
+        bId;
 
-      const isLive =
-        !!bus &&
-        bus.isActive === true &&
-        Number.isFinite(Number(bus.latitude)) &&
-        Number.isFinite(Number(bus.longitude));
 
-      if (pill) {
-        pill.className = isLive
-          ? "status-badge status-live"
-          : "status-badge status-off";
-        pill.innerText = isLive ? "LIVE" : "OFFLINE";
+      switchView(
+        "mapView",
+        document.querySelectorAll(
+          ".nav-tab"
+        )[1]
+      );
+
+    };
+
+
+  /* =========================================================
+     FIREBASE - LIVE BUS DATA
+  ========================================================= */
+
+  onValue(
+    ref(db, "buses"),
+    snapshot => {
+
+      latestBusesData =
+        snapshot.val() || {};
+
+
+      busKeys.forEach(
+        bId => {
+
+          const bus =
+            latestBusesData[
+              bId
+            ];
+
+
+          const safeId =
+            bId.replace(
+              /\s+/g,
+              "_"
+            );
+
+
+          const pill =
+            document.getElementById(
+              `pill_${safeId}`
+            );
+
+
+          const icon =
+            document.getElementById(
+              `icon_${safeId}`
+            );
+
+
+          const isLive =
+            !!bus &&
+            bus.isActive === true &&
+            Number.isFinite(
+              Number(
+                bus.latitude
+              )
+            ) &&
+            Number.isFinite(
+              Number(
+                bus.longitude
+              )
+            );
+
+
+          if (pill) {
+
+            pill.className =
+              isLive
+                ? "status-badge status-live"
+                : "status-badge status-off";
+
+
+            pill.innerHTML =
+              isLive
+                ? `
+                  <span
+                    class="status-dot"
+                  ></span>
+                  LIVE
+                `
+                : `
+                  <span
+                    class="status-dot"
+                  ></span>
+                  OFFLINE
+                `;
+
+          }
+
+
+          if (icon) {
+
+            icon.className =
+              isLive
+                ? "bus-icon-wrap"
+                : "bus-icon-wrap off";
+
+          }
+
+        }
+      );
+
+
+      const myBus =
+        latestBusesData[
+          assignedBus
+        ];
+
+
+      const myBusIsLive =
+        !!myBus &&
+        myBus.isActive === true &&
+        Number.isFinite(
+          Number(
+            myBus.latitude
+          )
+        ) &&
+        Number.isFinite(
+          Number(
+            myBus.longitude
+          )
+        );
+
+
+      if (
+        activeSelectedBus ===
+        assignedBus
+      ) {
+
+        if (myBusIsLive) {
+
+          setBusLiveUI(
+            myBus
+          );
+
+        } else {
+
+          setBusOfflineUI();
+
+        }
+
       }
 
-      if (icon) {
-        icon.className = isLive
-          ? "bus-icon-wrap"
-          : "bus-icon-wrap off";
-      }
-    });
 
-    renderActiveBusLocation();
-  });
+      renderActiveBusLocation();
 
-  onValue(ref(db, `announcements/${assignedBus}/latest`), snapshot => {
-    const d = snapshot.val();
-
-    if (d && d.text) {
-      document.getElementById("topNotifBadge").style.display = "block";
-      document.getElementById("announceTitle").innerHTML =
-        `${d.busId} Active Delay
-         <span style="font-size: 10px; color: var(--text-muted);">
-           ${d.time || "Recent"}
-         </span>`;
-      document.getElementById("announceMsg").innerText = d.text;
     }
-  });
+  );
+
+
+  /* =========================================================
+     FIREBASE - ANNOUNCEMENT
+  ========================================================= */
+
+  onValue(
+    ref(
+      db,
+      `announcements/${assignedBus}/latest`
+    ),
+    snapshot => {
+
+      const d =
+        snapshot.val();
+
+
+      if (
+        d &&
+        d.text
+      ) {
+
+        document.getElementById(
+          "topNotifBadge"
+        ).style.display =
+          "block";
+
+
+        document.getElementById(
+          "announceTitle"
+        ).innerText =
+          `${d.busId || assignedBus} Transport Update`;
+
+
+        document.getElementById(
+          "announceMsg"
+        ).innerText =
+          d.text;
+
+
+        document.getElementById(
+          "announceTime"
+        ).innerText =
+          d.time ||
+          "Recent update";
+
+
+        document.getElementById(
+          "notifList"
+        ).innerHTML =
+          `
+            <div
+              class="announce-card"
+            >
+
+              <div
+                class="announce-head"
+              >
+
+                <div
+                  class="announce-icon"
+                >
+                  <i
+                    class="ph-bold ph-megaphone"
+                  ></i>
+                </div>
+
+
+                <div
+                  class="announce-content"
+                >
+
+                  <h4>
+                    ${d.busId || assignedBus}
+                    Transport Update
+                  </h4>
+
+                  <p>
+                    ${d.text}
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <div
+                class="announce-time"
+              >
+
+                <i
+                  class="ph-bold ph-clock"
+                ></i>
+
+                <span>
+                  ${d.time || "Recent update"}
+                </span>
+
+              </div>
+
+            </div>
+          `;
+
+      } else {
+
+        document.getElementById(
+          "topNotifBadge"
+        ).style.display =
+          "none";
+
+      }
+
+    }
+  );
+
+
+  /* =========================================================
+     INITIAL UI
+  ========================================================= */
+
+  if (assignedRoute) {
+
+    document.getElementById(
+      "quickRouteStatus"
+    ).innerText =
+      "Ready";
+
+  }
+
+
 </script>
 
 </body>
