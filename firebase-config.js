@@ -3,7 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAD05rFiZvl0_MYFV2PHg58p48zw3LLMho",
+  apiKey: "AIzaSyBle2g5HxjN-VnW3tGX_oce7vBQG8ygscM",
   authDomain: "campus-ride-77afe.firebaseapp.com",
   databaseURL: "https://campus-ride-77afe-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "campus-ride-77afe",
